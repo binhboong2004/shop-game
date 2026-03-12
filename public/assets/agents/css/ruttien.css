@@ -1,0 +1,21 @@
+.btn-fixed-amount.active {
+    border-color: #E70814;
+    color: #E70814;
+    box-shadow: 0 0 10px rgba(231,8,20,0.2);
+}
+.btn-payment-method.active {
+    border-color: #E70814;
+    box-shadow: 0 0 15px rgba(231,8,20,0.15);
+}
+
+.btn-payment-method.active .material-symbols-outlined {
+    color: #E70814 !important;
+}
+
+.btn-payment-method.active span.text-agent-muted {
+    color: #ffffff !important;
+}
+
+.modal-backdrop, .modal-content {
+    transition: all 0.3s ease-out;
+}

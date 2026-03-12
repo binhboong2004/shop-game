@@ -1,0 +1,25 @@
+.ticket-row {
+    transition: all 0.2s ease;
+}
+
+.ticket-row:hover {
+    background-color: #1a1c23;
+}
+
+.admin-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.admin-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.admin-scrollbar::-webkit-scrollbar-thumb {
+    background: #2a2d35;
+    border-radius: 4px;
+}
+
+.admin-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #3f4350;
+}

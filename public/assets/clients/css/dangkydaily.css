@@ -1,0 +1,13 @@
+/* Styling specific to dangkydaily page */
+.form-group input:focus + span.material-symbols-outlined {
+    color: var(--primary);
+}
+
+.form-group input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 30px rgba(0,0,0,0.1) inset !important;
+    -webkit-text-fill-color: inherit !important;
+}
+
+.dark .form-group input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 30px rgba(0,0,0,0.3) inset !important;
+}

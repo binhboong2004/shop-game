@@ -1,0 +1,75 @@
+.glass-panel {
+    background: linear-gradient(145deg, #1a1c23 0%, #13131A 100%);
+    border: 1px solid #2a2d35;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+.status-badge {
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.status-success {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.status-failed {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.status-pending {
+    background: rgba(234, 179, 8, 0.1);
+    color: #eab308;
+    border: 1px solid rgba(234, 179, 8, 0.2);
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+    height: 6px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+    background: #13131A;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background: #2a2d35;
+    border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background: #3f4350;
+}
+
+#transactionModal {
+    transition: opacity 0.3s ease;
+}
+
+#transactionModal.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#transactionModal:not(.hidden) {
+    opacity: 1;
+}
+
+#transactionModal > div:last-child {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#transactionModal.hidden > div:last-child {
+    transform: translate(-50%, -60%) scale(0.95);
+}
+
+#transactionModal:not(.hidden) > div:last-child {
+    transform: translate(-50%, -50%) scale(1);
+}

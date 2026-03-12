@@ -1,0 +1,30 @@
+/* Custom CSS cho trang Yêu thích */
+.wishlist-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wishlist-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(231, 8, 20, 0.1), 0 8px 10px -6px rgba(231, 8, 20, 0.1);
+}
+
+/* Modal animation classes */
+.modal-active {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+.modal-active #delete-modal-content {
+    transform: scale(1) !important;
+}
+
+/* Empty wishlist state */
+.empty-wishlist-icon {
+    animation: floatHeart 3s ease-in-out infinite;
+}
+
+@keyframes floatHeart {
+    0% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(-10px) scale(1.1); }
+    100% { transform: translateY(0px) scale(1); }
+}

@@ -1,0 +1,32 @@
+.attribute-row {
+    transition: all 0.2s ease-in-out;
+}
+
+#attributeModal > div,
+#deleteModal > div {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#attributeModal.modal-active > div,
+#deleteModal.modal-active > div {
+    transform: scale(1);
+    opacity: 1;
+}
+
+textarea::-webkit-scrollbar {
+    width: 6px;
+}
+
+textarea::-webkit-scrollbar-track {
+    background: #13131a; 
+    border-radius: 4px;
+}
+
+textarea::-webkit-scrollbar-thumb {
+    background: #2a2d35; 
+    border-radius: 4px;
+}
+
+textarea::-webkit-scrollbar-thumb:hover {
+    background: #3f4350; 
+}

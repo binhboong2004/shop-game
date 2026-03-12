@@ -1,0 +1,9 @@
+.copy-btn .material-symbols-outlined,
+.view-pass-btn .material-symbols-outlined {
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.copy-btn:active .material-symbols-outlined,
+.view-pass-btn:active .material-symbols-outlined {
+    transform: scale(0.9);
+}

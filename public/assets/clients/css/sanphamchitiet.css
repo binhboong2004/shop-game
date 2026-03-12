@@ -1,0 +1,81 @@
+/* Cài đặt chung kế thừa từ style.css (biến CSS không cần khai báo lại nếu đã có ở style.css) */
+.product-detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.breadcrumb a {
+    color: #94a3b8;
+    /* slate-400 */
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.breadcrumb a:hover {
+    color: var(--primary-color, #E70814);
+}
+
+.breadcrumb span.separator {
+    color: #475569;
+    /* slate-600 */
+}
+
+.breadcrumb span.current {
+    color: var(--primary-color, #E70814);
+    font-weight: bold;
+}
+
+/* Product Info Box */
+.product-info-box {
+    background-color: var(--surface-color, #1e1e2f);
+    /* Hoặc dùng class Tailwind */
+    border: 1px solid rgba(231, 8, 20, 0.2);
+    border-radius: 12px;
+    padding: 24px;
+}
+
+/* Copy Icon */
+.copy-icon {
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.copy-icon:hover {
+    color: var(--primary-color, #E70814);
+}
+
+/* Custom Scrollbar for Thumbnails (nếu dùng flex-nowrap overflow-x-auto) */
+.thumb-scroll::-webkit-scrollbar {
+    height: 6px;
+}
+
+.thumb-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.thumb-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(231, 8, 20, 0.5);
+    border-radius: 10px;
+}
+
+/* Các tuỳ chỉnh thêm cho hiển thị giá / status */
+.text-accent {
+    color: var(--primary-color, #E70814);
+}
+
+.bg-accent {
+    background-color: var(--primary-color, #E70814);
+}
+
+.border-accent {
+    border-color: var(--primary-color, #E70814);
+}

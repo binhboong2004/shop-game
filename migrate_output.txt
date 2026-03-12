@@ -1,0 +1,71 @@
+﻿
+   INFO  Preparing database.  
+
+  Creating migration table  20.02ms DONE
+
+   INFO  Running migrations.  
+
+  0001_01_01_000000_create_users_table  70.70ms DONE
+  0001_01_01_000001_create_cache_table  43.26ms DONE
+  0001_01_01_000002_create_jobs_table  63.52ms DONE
+  2026_03_09_071542_create_games_table  26.57ms DONE
+  2026_03_09_071543_create_game_categories_table  87.16ms DONE
+  2026_03_09_071544_create_attributes_table  52.02ms DONE
+  2026_03_09_071544_create_discount_codes_table  25.66ms DONE
+  2026_03_09_071545_create_accounts_table  151.16ms DONE
+  2026_03_09_071545_create_deposits_table  52.20ms DONE
+  2026_03_09_071546_create_account_attributes_table  100.78ms DONE
+  2026_03_09_071546_create_wheel_prizes_table  10.73ms DONE
+  2026_03_09_071546_create_withdrawals_table  47.96ms DONE
+  2026_03_09_071547_create_articles_table  57.73ms DONE
+  2026_03_09_071547_create_tickets_table  96.17ms DONE
+  2026_03_09_071548_create_settings_table  25.19ms DONE
+  2026_03_09_071549_create_orders_table  191.77ms DONE
+  2026_03_09_071549_create_ticket_replies_table  88.89ms DONE
+  2026_03_09_071549_create_wheel_histories_table  97.39ms DONE
+
+
+   INFO  Seeding database.  
+
+  Database\Seeders\UserSeeder  RUNNING  
+  Database\Seeders\UserSeeder  622 ms DONE  
+
+  Database\Seeders\GameSeeder  RUNNING  
+  Database\Seeders\GameSeeder  25 ms DONE  
+
+  Database\Seeders\GameCategorySeeder  RUNNING  
+  Database\Seeders\GameCategorySeeder  16 ms DONE  
+
+  Database\Seeders\AttributeSeeder  RUNNING  
+  Database\Seeders\AttributeSeeder  41 ms DONE  
+
+  Database\Seeders\AccountSeeder  RUNNING  
+  Database\Seeders\AccountSeeder  1,502 ms DONE  
+
+  Database\Seeders\AccountAttributeSeeder  RUNNING  
+  Database\Seeders\AccountAttributeSeeder  79 ms DONE  
+
+  Database\Seeders\SettingSeeder  RUNNING  
+  Database\Seeders\SettingSeeder  2 ms DONE  
+
+  Database\Seeders\OrderSeeder  RUNNING  
+  Database\Seeders\OrderSeeder  39 ms DONE  
+
+  Database\Seeders\DepositSeeder  RUNNING  
+  Database\Seeders\DepositSeeder  29 ms DONE  
+
+  Database\Seeders\WithdrawalSeeder  RUNNING  
+  Database\Seeders\WithdrawalSeeder  37 ms DONE  
+
+  Database\Seeders\DiscountCodeSeeder  RUNNING  
+  Database\Seeders\DiscountCodeSeeder  24 ms DONE  
+
+  Database\Seeders\TicketSeeder  RUNNING  
+  Database\Seeders\TicketSeeder  81 ms DONE  
+
+  Database\Seeders\WheelSeeder  RUNNING  
+  Database\Seeders\WheelSeeder  85 ms DONE  
+
+  Database\Seeders\ArticleSeeder  RUNNING  
+  Database\Seeders\ArticleSeeder  29 ms DONE  
+

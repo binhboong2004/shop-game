@@ -1,0 +1,66 @@
+/* css/napthecao.css */
+/* Styles for Custom Radios */
+.custom-radio-group .custom-radio input[type="radio"]:checked+.radio-card {
+    border-color: #E70814;
+}
+
+.custom-radio-group.network-selection .custom-radio input[type="radio"]:checked+.radio-card {
+    background-color: rgba(231, 8, 20, 0.05);
+}
+
+.custom-radio-group.price-selection .custom-radio input[type="radio"]:checked+.radio-card {
+    background-color: rgba(231, 8, 20, 0.1);
+    color: #E70814;
+}
+
+/* Scrollbar table lịch sử nạp thẻ */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(231, 8, 20, 0.3);
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(231, 8, 20, 0.6);
+}
+
+/* Toast Animation */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.toast-slide-in {
+    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.toast-fade-out {
+    animation: fadeOutRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

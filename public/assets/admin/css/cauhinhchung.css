@@ -1,0 +1,14 @@
+#logo-upload, #favicon-upload {
+    cursor: pointer;
+}
+#logo-preview, #favicon-preview {
+    transition: transform 0.3s ease;
+}
+
+.group:hover #logo-preview, .group:hover #favicon-preview {
+    transform: scale(1.05);
+}
+
+textarea.font-mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}

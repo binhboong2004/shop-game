@@ -1,0 +1,160 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\User;
+
+class AdminController extends Controller
+{
+    public function index()
+    {
+        $admins = User::where('role', 'admin')->orderBy('created_at', 'desc')->paginate(10);
+        return view('admin.pages.taikhoanadmin', compact('admins'));
+    }
+
+    public function create()
+    {
+        return view('admin.pages.themadmin');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'phone' => 'nullable|string|max:20',
+            'password' => 'required|string|min:6|confirmed',
+            'balance' => 'nullable|numeric|min:0',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'name.required' => 'Vui lòng nhập họ và tên.',
+            'email.required' => 'Vui lòng nhập địa chỉ email.',
+            'email.email' => 'Địa chỉ email không hợp lệ.',
+            'email.unique' => 'Email này đã được sử dụng.',
+            'password.required' => 'Vui lòng nhập mật khẩu.',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
+            'password.confirmed' => 'Mật khẩu xác nhận không khớp.',
+            'avatar.image' => 'File tải lên phải là hình ảnh.',
+            'avatar.max' => 'Kích thước ảnh không được vượt quá 2MB.',
+        ]);
+
+        $userData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            'balance' => $request->balance ?? 0,
+            'role' => 'admin',
+            'status' => $request->has('is_active') ? 'active' : 'banned',
+        ];
+
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/avatars'), $filename);
+            $userData['avatar'] = 'uploads/avatars/' . $filename;
+        }
+
+        User::create($userData);
+
+        return redirect()->route('admin.taikhoanadmin')->with('success', 'Thêm admin mới thành công!');
+    }
+
+    public function edit($id)
+    {
+        $user = User::findOrFail($id);
+        return view('admin.pages.themadmin', compact('user'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,'.$id,
+            'phone' => 'nullable|string|max:20',
+            'password' => 'nullable|string|min:6|confirmed',
+            'balance' => 'nullable|numeric|min:0',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'name.required' => 'Vui lòng nhập họ và tên.',
+            'email.required' => 'Vui lòng nhập địa chỉ email.',
+            'email.email' => 'Địa chỉ email không hợp lệ.',
+            'email.unique' => 'Email này đã được sử dụng.',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
+            'password.confirmed' => 'Mật khẩu xác nhận không khớp.',
+            'avatar.image' => 'File tải lên phải là hình ảnh.',
+            'avatar.max' => 'Kích thước ảnh không được vượt quá 2MB.',
+        ]);
+
+        $userData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'balance' => $request->balance ?? 0,
+            'status' => $request->has('is_active') ? 'active' : 'banned',
+        ];
+
+        if ($request->filled('password')) {
+            $userData['password'] = \Illuminate\Support\Facades\Hash::make($request->password);
+        }
+
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/avatars'), $filename);
+            $userData['avatar'] = 'uploads/avatars/' . $filename;
+            
+            if ($user->avatar && file_exists(public_path($user->avatar))) {
+                unlink(public_path($user->avatar));
+            }
+        }
+
+        $user->update($userData);
+
+        return redirect()->route('admin.taikhoanadmin')->with('success', 'Cập nhật admin thành công!');
+    }
+
+    public function lock($id)
+    {
+        $user = User::findOrFail($id);
+        $user->update(['status' => 'banned']);
+        return redirect()->route('admin.taikhoanadmin')->with('success', 'Đã khóa tài khoản admin thành công!');
+    }
+
+    public function unlock($id)
+    {
+        $user = User::findOrFail($id);
+        $user->update(['status' => 'active']);
+        return redirect()->route('admin.taikhoanadmin')->with('success', 'Đã mở khóa tài khoản admin!');
+    }
+
+    public function destroy($id)
+    {
+        $user = User::findOrFail($id);
+        
+        if ($user->avatar && file_exists(public_path($user->avatar))) {
+            unlink(public_path($user->avatar));
+        }
+        
+        $user->delete();
+        
+        return redirect()->route('admin.taikhoanadmin')->with('success', 'Đã xóa tài khoản admin!');
+    }
+
+    public function promote(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $request->validate([
+            'role' => 'required|in:agent,member'
+        ]);
+        
+        $user->update(['role' => $request->role]);
+        
+        return redirect()->route('admin.taikhoanadmin')->with('success', 'Phân quyền thành công!');
+    }
+}
+

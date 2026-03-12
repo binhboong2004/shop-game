@@ -1,0 +1,87 @@
+/* Vòng Quay May Mắn Styles */
+
+.wheel-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.wheel-border {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: linear-gradient(to bottom right, #fbbf24, #d97706, #92400e);
+}
+
+.wheel-inner {
+    position: relative;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+/* Add an animated light effect around the border */
+.wheel-border::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent, #E70814, transparent 30%);
+    animation: rotateBorder 3s linear infinite;
+    z-index: 0;
+}
+
+.wheel-inner {
+    z-index: 1; /* Keep inner above the border light */
+}
+
+@keyframes autoRotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.auto-rotating {
+    animation: autoRotate 60s linear infinite;
+}
+
+@keyframes rotateBorder {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Modal Animations */
+@keyframes blob {
+    0% {
+        transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+        transform: translate(30px, -50px) scale(1.1);
+    }
+    66% {
+        transform: translate(-20px, 20px) scale(0.9);
+    }
+    100% {
+        transform: translate(0px, 0px) scale(1);
+    }
+}
+
+.animate-blob {
+    animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+    animation-delay: 2s;
+}
+
+/* Recent list scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}

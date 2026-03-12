@@ -1,0 +1,32 @@
+/* tintuc.css */
+
+/* Ẩn scrollbar cho phần Tabs */
+.news-tabs {
+    -ms-overflow-style: none;
+    /* IE và Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.news-tabs::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Opera */
+}
+
+/* Các tuỳ chỉnh thêm cho hover efffects (nếu utility class Tailwind không đủ đáp ứng) */
+.news-tab.active {
+    border-bottom-color: #e70814;
+    color: #e70814;
+    background-color: rgba(231, 8, 20, 0.1);
+}
+
+.news-tab:hover:not(.active) {
+    border-bottom-color: #475569;
+    /* border-slate-600 */
+    color: #ffffff;
+}
+
+/* Hover mượt cho ảnh bài viết */
+article img {
+    will-change: transform;
+}

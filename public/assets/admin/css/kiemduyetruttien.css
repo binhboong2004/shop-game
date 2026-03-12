@@ -1,0 +1,42 @@
+.withdraw-row {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.withdraw-row:hover {
+    box-shadow: inset 0 0 0 1px #2a2d35;
+}
+
+#approveModal > div,
+#rejectModal > div,
+#deleteModal > div {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#approveModal.active > div,
+#rejectModal.active > div,
+#deleteModal.active > div {
+    transform: scale(1);
+    opacity: 1;
+}
+
+textarea::-webkit-scrollbar {
+    width: 6px;
+}
+textarea::-webkit-scrollbar-track {
+    background: transparent;
+}
+textarea::-webkit-scrollbar-thumb {
+    background-color: #2a2d35;
+    border-radius: 10px;
+}

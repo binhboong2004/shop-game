@@ -1,0 +1,102 @@
+/* ========== danhmucchitiet.css (ĐÃ FIX LỖI BUTTON) ========== */
+
+body {
+    font-family: "Be Vietnam Pro", sans-serif;
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* 2. Cấu trúc nội dung Card */
+.product-grid .group {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.product-grid .group .p-3 {
+    padding: 0.75rem !important;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* Tiêu đề sản phẩm - Cố định độ cao */
+.product-grid .group h3 {
+    height: 2.5rem; /* ~ 2 dòng */
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+}
+
+/* CSS cho vùng thuộc tính */
+.product-grid .group .grid {
+    margin-top: 0.25rem;
+}
+
+/* 3. PHẦN QUAN TRỌNG: Xử lý Giá và Nút Mua */
+.product-grid .group .mt-auto {
+    margin-top: auto;
+    padding-top: 0.75rem !important;
+}
+
+.product-grid .group .price-text {
+    font-size: 1rem !important;
+    font-weight: 800 !important;
+    color: #e70814;
+    white-space: nowrap;
+}
+
+.product-grid .group .bg-primary.text-white {
+    padding: 0.4rem 0.6rem !important;
+    font-size: 0.65rem !important;
+    text-transform: uppercase;
+}
+
+/* Responsive cho Mobile */
+@media (max-width: 640px) {
+    .product-grid .group .p-3 {
+        padding: 0.5rem !important;
+        gap: 0.5rem;
+    }
+    .product-grid .group h3 {
+        font-size: 0.75rem !important;
+        height: 2.2rem;
+    }
+    .product-grid .group .price-text {
+        font-size: 0.85rem !important;
+    }
+    .product-grid .group .bg-primary.text-white {
+        padding: 0.35rem 0.5rem !important;
+        font-size: 0.6rem !important;
+    }
+}
+
+/* Icon bên trong nút */
+.product-grid .group .bg-primary.text-white.px-4 .material-symbols-outlined {
+    font-size: 11px !important;
+}
+
+/* 4. Các thành phần nhỏ khác (Giữ nguyên cấu hình cũ của bạn) */
+.product-grid .group .absolute.top-2.left-2 {
+    font-size: 7px;
+    padding: 1px 4px;
+    top: 4px; left: 4px;
+}
+
+.product-grid .group .absolute.top-2.right-2 {
+    width: 22px; height: 22px;
+    top: 4px; right: 4px;
+}
+
+.product-grid .group .absolute.top-2.right-2 .material-symbols-outlined {
+    font-size: 13px;
+}
+
+.product-grid .group .absolute.bottom-0 span {
+    font-size: 8px;
+}
+
+.product-grid .group .absolute.bottom-0 {
+    padding: 0.25rem 0.5rem;
+}

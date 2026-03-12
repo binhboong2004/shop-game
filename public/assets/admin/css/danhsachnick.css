@@ -1,0 +1,24 @@
+.nick-row {
+    transition: all 0.2s ease;
+}
+
+.nick-row:hover {
+    box-shadow: inset 2px 0 0 0 #E70814;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+    height: 6px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+    background: #13131A;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background: #2a2d35;
+    border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background: #E70814;
+}
