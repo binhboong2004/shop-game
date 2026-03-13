@@ -86,17 +86,35 @@ class CartController extends Controller
         // Validate coupon (if applicable)
         $couponCode = $request->input('coupon_code');
         // Simple logic for total price calculation (discount logic skipped to keep simple, just use provided from FE for verification or recalculate)
+        // Recalculate subtotal and validate coupon
         $subtotal = 0;
         $discount = 0;
-        
         foreach ($carts as $cart) {
             $subtotal += $cart->account->price;
         }
 
-        if ($couponCode === 'SHOPNICK50K') {
-            $discount = 50000;
-        } elseif ($couponCode === 'FREESHIP') {
-            $discount = 20000;
+        $coupon = null;
+        if ($request->filled('coupon_code')) {
+            $coupon = \App\Models\DiscountCode::where('code', $request->coupon_code)->first();
+            if ($coupon && $coupon->status == 1) {
+                $now = now();
+                $isValid = true;
+                if ($coupon->start_date && $coupon->start_date > $now) $isValid = false;
+                if ($coupon->end_date && $coupon->end_date < $now) $isValid = false;
+                if ($coupon->max_uses > 0 && $coupon->used_count >= $coupon->max_uses) $isValid = false;
+                if ($coupon->min_order_amount > 0 && $subtotal < $coupon->min_order_amount) $isValid = false;
+
+                if ($isValid) {
+                    if ($coupon->type === 'percent') {
+                        $discount = ($subtotal * $coupon->value) / 100;
+                        if ($coupon->max_discount_amount > 0 && $discount > $coupon->max_discount_amount) {
+                            $discount = $coupon->max_discount_amount;
+                        }
+                    } else {
+                        $discount = $coupon->value;
+                    }
+                }
+            }
         }
 
         if ($discount > $subtotal) {
@@ -113,19 +131,35 @@ class CartController extends Controller
             \Illuminate\Support\Facades\DB::beginTransaction();
 
             // 1. Deduct balance from buyer
-            $user->balance -= $totalPrice;
-            $user->save();
+            \App\Models\User::where('id', $user->id)->decrement('balance', $totalPrice);
 
             // 2. Process each account order
+            $totalDiscountUsed = 0;
+            $remainingDiscount = $discount;
+            $orderCount = count($carts);
+            $processedCount = 0;
+
             foreach ($carts as $cart) {
+                $processedCount++;
                 $account = $cart->account;
                 
-                // Optional: Check if account already sold by someone else
                 if ($account->status === 'sold') {
                     throw new \Exception("Tài khoản (MS: {$account->id}) đã được người khác mua. Vui lòng thử lại.");
                 }
 
                 $seller = $account->seller;
+
+                // Calculate proportional discount for this item
+                $itemDiscount = 0;
+                if ($discount > 0 && $subtotal > 0) {
+                    if ($processedCount === $orderCount) {
+                        // Last item gets the remainder to avoid rounding issues
+                        $itemDiscount = $remainingDiscount;
+                    } else {
+                        $itemDiscount = round(($account->price / $subtotal) * $discount);
+                        $remainingDiscount -= $itemDiscount;
+                    }
+                }
 
                 // Update Account
                 $account->status = 'sold';
@@ -138,21 +172,24 @@ class CartController extends Controller
                     'buyer_id' => $user->id,
                     'seller_id' => $seller->id,
                     'account_id' => $account->id,
-                    'amount' => $account->price, // Storing original individual price
-                    'discount_code_id' => null, // Placeholder if you integrate real DB coupons
+                    'amount' => $account->price,
+                    'discount_amount' => $itemDiscount,
+                    'discount_code_id' => $coupon ? $coupon->id : null,
                     'status' => 'completed',
                 ]);
 
-                // Increase seller balance
-                if ($seller) {
-                    $seller->balance += $account->price;
-                    $seller->save();
-                    
-                    // You might want to log transactions here
+                // Increase seller balance (Only if buyer is not the seller)
+                if ($seller && $seller->id !== $user->id) {
+                    \App\Models\User::where('id', $seller->id)->increment('balance', $account->price);
                 }
             }
 
-            // 3. Clear cart
+            // 3. Update coupon usage
+            if ($coupon) {
+                $coupon->increment('used_count');
+            }
+
+            // 4. Clear cart
             $user->carts()->delete();
 
             \Illuminate\Support\Facades\DB::commit();

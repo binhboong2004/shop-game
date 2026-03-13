@@ -35,10 +35,10 @@
 
                     <!-- Featured post (Bản tin nổi bật) -->
                     @if($featuredArticle)
-                    <div
+                    <div onclick="location.href='{{ route('tintucchitiet', $featuredArticle->slug) }}'"
                         class="relative rounded-2xl overflow-hidden group hover:shadow-2xl hover:shadow-primary/20 transition-all border border-primary/10 cursor-pointer">
                         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                            style="background-image: url('{{ $featuredArticle->thumbnail ? asset($featuredArticle->thumbnail) : 'https://game8.vn/media/202008/images/pubg-mobile-1-0-800.jpg' }}');">
+                            style="background-image: url('{{ $featuredArticle->thumbnail ? asset('storage/' . $featuredArticle->thumbnail) : 'https://game8.vn/media/202008/images/pubg-mobile-1-0-800.jpg' }}');">
                         </div>
                         <div class="absolute inset-0 bg-gradient-to-t from-[#110608] via-[#110608]/80 to-transparent">
                         </div>
@@ -51,7 +51,7 @@
                             <h2
                                 class="text-2xl md:text-4xl font-black text-white leading-tight mb-3 group-hover:text-primary transition-colors">
                                 {{ $featuredArticle->title }}</h2>
-                            <p class="text-slate-300 line-clamp-2 md:line-clamp-3 mb-6">{{ Str::limit(strip_tags($featuredArticle->content), 200) }}</p>
+                            <p class="text-slate-300 line-clamp-2 md:line-clamp-3 mb-6">{{ $featuredArticle->excerpt ?? Str::limit(strip_tags($featuredArticle->content), 200) }}</p>
                             <div class="flex items-center gap-4">
                                 <div
                                     class="w-10 h-10 rounded-full bg-slate-700 overflow-hidden border-2 border-primary border-transparent">
@@ -81,10 +81,10 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="news-grid">
                         @forelse($articles as $article)
                         <!-- Article Item -->
-                        <article
+                        <article onclick="location.href='{{ route('tintucchitiet', $article->slug) }}'"
                             class="bg-primary/5 rounded-xl overflow-hidden border border-primary/10 group cursor-pointer hover:-translate-y-1 transition-all hover:shadow-xl hover:shadow-primary/10 hover:border-primary/30 flex flex-col h-full">
                             <div class="relative aspect-video overflow-hidden">
-                                <img src="{{ $article->thumbnail ? asset($article->thumbnail) : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlQ0BFX38dEYj9fqM9syQL7OoKgXeJn9NiJw&s' }}"
+                                <img src="{{ $article->thumbnail ? asset('storage/' . $article->thumbnail) : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlQ0BFX38dEYj9fqM9syQL7OoKgXeJn9NiJw&s' }}"
                                     alt="{{ $article->title }}"
                                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                 <div
@@ -98,11 +98,11 @@
                                 <h3
                                     class="font-bold text-lg md:text-xl text-white leading-snug mb-3 group-hover:text-primary transition-colors flex-1">
                                     {{ $article->title }}</h3>
-                                <p class="text-slate-400 text-sm line-clamp-2 mb-4">{{ Str::limit(strip_tags($article->content), 120) }}</p>
+                                <p class="text-slate-400 text-sm line-clamp-2 mb-4">{{ $article->excerpt ?? Str::limit(strip_tags($article->content), 120) }}</p>
                                 <div
                                     class="flex items-center justify-between text-xs border-t border-primary/10 pt-4 mt-auto">
                                     <span class="text-slate-500 flex items-center gap-1"><span
-                                            class="material-symbols-outlined text-[14px]">visibility</span> Lượt
+                                            class="material-symbols-outlined text-[14px]">visibility</span> {{ number_format($article->views) }} Lượt
                                         xem</span>
                                     <span
                                         class="text-primary font-medium flex items-center gap-1 group-hover:gap-2 transition-all">Đọc
@@ -118,8 +118,8 @@
 
                     <!-- Pagination -->
                     @if($articles->hasPages())
-                    <div class="mt-8">
-                        {{ $articles->appends(request()->query())->links('pagination::tailwind') }}
+                    <div class="mt-8 flex justify-center">
+                        {{ $articles->appends(request()->query())->links('vendor.pagination.tailwind') }}
                     </div>
                     @endif
 
@@ -141,28 +141,6 @@
                         </div>
                     </div>
 
-                    <!-- Categories Widget -->
-                    <div class="bg-primary/5 rounded-2xl p-6 border border-primary/10">
-                        <h3
-                            class="font-bold text-lg mb-4 text-white flex items-center gap-2 border-b border-primary/10 pb-3">
-                            <span class="material-symbols-outlined text-primary">category</span> Danh Mục Tin
-                        </h3>
-                        <ul class="flex flex-col gap-3 text-sm font-medium">
-                            <li><a href="{{ route('tintuc', ['type' => 'news']) }}"
-                                    class="flex items-center justify-between text-slate-400 hover:text-primary group transition-colors"><span
-                                        class="flex items-center gap-2"><span
-                                            class="material-symbols-outlined text-[16px] text-primary/50 group-hover:text-primary transition-colors">sports_esports</span>
-                                        Tin Tức</span></a>
-                            </li>
-                            <li class="border-t border-white/5 pt-3"><a href="{{ route('tintuc', ['type' => 'event']) }}"
-                                    class="flex items-center justify-between text-slate-400 hover:text-primary group transition-colors"><span
-                                        class="flex items-center gap-2"><span
-                                            class="material-symbols-outlined text-[16px] text-primary/50 group-hover:text-primary transition-colors">event</span>
-                                        Sự Kiện</span></a>
-                            </li>
-                        </ul>
-                    </div>
-
                     <!-- Trending News Widget -->
                     <div class="bg-primary/5 rounded-2xl p-6 border border-primary/10">
                         <h3
@@ -172,16 +150,17 @@
                         </h3>
                         <div class="flex flex-col gap-5">
                             @foreach($trendingArticles as $tArticle)
-                            <a href="#" class="flex gap-4 group">
+                            <a href="{{ route('tintucchitiet', $tArticle->slug) }}" class="flex gap-4 group">
                                 <div class="w-[80px] h-[60px] rounded-lg overflow-hidden flex-shrink-0">
-                                    <img src="{{ $tArticle->thumbnail ? asset($tArticle->thumbnail) : 'https://img.utdstc.com/icon/cc2/e0f/cc2e0f7a7432a583e43ff44b472a197019dc91669e5a6c54f776c89a00b261dd:200' }}"
+                                    <img src="{{ $tArticle->thumbnail ? asset('storage/' . $tArticle->thumbnail) : 'https://img.utdstc.com/icon/cc2/e0f/cc2e0f7a7432a583e43ff44b472a197019dc91669e5a6c54f776c89a00b261dd:200' }}"
                                         alt="{{ $tArticle->title }}"
                                         class="w-full h-full object-cover group-hover:scale-110 transition-transform">
                                 </div>
                                 <div class="flex flex-col justify-between">
                                     <h4
-                                        class="text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                                        class="text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-primary transition-colors uppercase">
                                         {{ $tArticle->title }}</h4>
+                                    <span class="text-[10px] text-slate-500 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">visibility</span> {{ number_format($tArticle->views) }}</span>
                                 </div>
                             </a>
                             @endforeach
@@ -195,28 +174,14 @@
                             <span class="material-symbols-outlined text-primary">tag</span> Thẻ nổi bật
                         </h3>
                         <div class="flex flex-wrap gap-2">
-                            <a href="#"
-                                class="px-3 py-1.5 bg-background-dark border border-primary/20 hover:border-primary text-slate-300 hover:text-primary text-xs font-medium rounded-lg transition-all">LienQuan</a>
-                            <a href="#"
-                                class="px-3 py-1.5 bg-background-dark border border-primary/20 hover:border-primary text-slate-300 hover:text-primary text-xs font-medium rounded-lg transition-all">FreeFire</a>
-                            <a href="#"
-                                class="px-3 py-1.5 bg-background-dark border border-primary/20 hover:border-primary text-slate-300 hover:text-primary text-xs font-medium rounded-lg transition-all">GiaRe</a>
-                            <a href="#"
-                                class="px-3 py-1.5 bg-background-dark border border-primary/20 hover:border-primary text-slate-300 hover:text-primary text-xs font-medium rounded-lg transition-all">KinhNghiem</a>
-                            <a href="#"
-                                class="px-3 py-1.5 bg-background-dark border border-primary/20 hover:border-primary text-slate-300 hover:text-primary text-xs font-medium rounded-lg transition-all">KhuyenMai</a>
-                            <a href="#"
-                                class="px-3 py-1.5 bg-background-dark border border-primary/20 hover:border-primary text-slate-300 hover:text-primary text-xs font-medium rounded-lg transition-all">NapTheKM</a>
+                            <a href="#" class="px-3 py-1.5 bg-background-dark border border-primary/20 hover:border-primary text-slate-300 hover:text-primary text-xs font-medium rounded-lg transition-all">LienQuan</a>
+                            <a href="#" class="px-3 py-1.5 bg-background-dark border border-primary/20 hover:border-primary text-slate-300 hover:text-primary text-xs font-medium rounded-lg transition-all">FreeFire</a>
+                            <a href="#" class="px-3 py-1.5 bg-background-dark border border-primary/20 hover:border-primary text-slate-300 hover:text-primary text-xs font-medium rounded-lg transition-all">GiaRe</a>
+                            <a href="#" class="px-3 py-1.5 bg-background-dark border border-primary/20 hover:border-primary text-slate-300 hover:text-primary text-xs font-medium rounded-lg transition-all">KhuyenMai</a>
                         </div>
                     </div>
 
                 </aside>
             </div>
-
-        
     </main>
 @endsection
-
-@push('scripts')
-    <script src="{{ asset('assets/clients/js/tintuc.js') }}"></script>
-@endpush

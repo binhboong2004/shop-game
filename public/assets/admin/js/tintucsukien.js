@@ -1,107 +1,197 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const btnAdd = document.getElementById('btn-add-news');
     const newsModal = document.getElementById('newsModal');
     const deleteModal = document.getElementById('deleteModal');
-    const btnCancels = document.querySelectorAll('.btn-cancel');
-    const btnEdits = document.querySelectorAll('.btn-edit');
-    const btnDeletes = document.querySelectorAll('.btn-delete');
-    const btnStatusToggles = document.querySelectorAll('.btn-status-toggle');
-    const modalTitle = document.getElementById('modalTitle');
-    
+    const newsForm = document.getElementById('newsForm');
+    const btnSave = document.getElementById('btn-save-news');
+    const btnConfirmDelete = document.getElementById('btn-confirm-delete');
     const thumbnailUpload = document.getElementById('thumbnail-upload');
     const thumbnailPreview = document.getElementById('thumbnail-preview');
     const thumbnailIcon = document.getElementById('thumbnail-icon');
-    if (btnAdd) {
-        btnAdd.addEventListener('click', () => {
-            modalTitle.textContent = 'Thêm Bài Viết Mới';
-            document.getElementById('newsForm').reset();
-            resetThumbnail();
-            openModal(newsModal);
-        });
-    }
+    
+    let deleteId = null;
 
-    btnEdits.forEach(btn => {
-        btn.addEventListener('click', () => {
-            modalTitle.textContent = 'Chỉnh Sửa Bài Viết';
-            openModal(newsModal);
-        });
+    // Open Add Modal
+    document.getElementById('btn-add-news')?.addEventListener('click', () => {
+        document.getElementById('modalTitle').textContent = 'Thêm Bài Viết Mới';
+        newsForm.reset();
+        document.getElementById('newsId').value = '';
+        resetThumbnail();
+        openModal(newsModal);
     });
 
-    btnDeletes.forEach(btn => {
-        btn.addEventListener('click', () => {
-            openModal(deleteModal);
-        });
+    // Close Modals
+    document.querySelectorAll('.btn-close-modal').forEach(btn => {
+        btn.addEventListener('click', () => closeModal(newsModal));
     });
 
-    btnStatusToggles.forEach(btn => {
-        btn.addEventListener('click', function() {
-            if (this.textContent.trim() === 'Hiển thị') {
-                this.className = "inline-block w-20 px-2 py-1 bg-[#E70814]/10 text-[#E70814] text-xs font-bold border border-[#E70814]/20 rounded btn-status-toggle";
-                this.textContent = 'Đang ẩn';
+    document.querySelectorAll('.btn-close-delete').forEach(btn => {
+        btn.addEventListener('click', () => closeModal(deleteModal));
+    });
+
+    // Thumbnail Preview
+    thumbnailUpload?.addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                thumbnailPreview.src = e.target.result;
+                thumbnailPreview.classList.remove('hidden');
+                thumbnailIcon.classList.add('hidden');
+            }
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+
+    // Save News
+    btnSave?.addEventListener('click', function() {
+        const id = document.getElementById('newsId').value;
+        const url = id ? ARTICLE_ROUTES.update.replace(':id', id) : ARTICLE_ROUTES.store;
+        const formData = new FormData(newsForm);
+        
+        // Cập nhật nội dung từ CKEditor
+        if (editor) {
+            formData.set('content', editor.getData());
+        }
+
+        btnSave.disabled = true;
+        btnSave.innerHTML = '<span class="animate-spin inline-block size-4 border-2 border-white border-t-transparent rounded-full mr-2"></span> Đang lưu...';
+
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
             } else {
-                this.className = "inline-block w-20 px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-bold border border-emerald-500/20 rounded btn-status-toggle";
-                this.textContent = 'Hiển thị';
+                showToast(data.message || 'Có lỗi xảy ra', 'error');
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Lỗi hệ thống!', 'error');
+        })
+        .finally(() => {
+            btnSave.disabled = false;
+            btnSave.textContent = 'Lưu Bài Viết';
         });
     });
 
-    btnCancels.forEach(btn => {
-        btn.addEventListener('click', () => {
-            closeAllModals();
-        });
+    // Delete News
+    btnConfirmDelete?.addEventListener('click', function() {
+        if (!deleteId) return;
+
+        fetch(ARTICLE_ROUTES.delete.replace(':id', deleteId), {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            }
+        })
+        .catch(() => showToast('Lỗi hệ thống!', 'error'));
     });
 
-    if (thumbnailUpload) {
-        thumbnailUpload.addEventListener('change', function(e) {
-            if (e.target.files && e.target.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    thumbnailPreview.src = e.target.result;
-                    thumbnailPreview.classList.remove('hidden');
-                    if (thumbnailIcon) thumbnailIcon.classList.add('hidden');
+    // Global Functions for buttons in HTML
+    window.editNews = function(id) {
+        fetch(ARTICLE_ROUTES.edit.replace(':id', id))
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('modalTitle').textContent = 'Chỉnh Sửa Bài Viết';
+            document.getElementById('newsId').value = data.id;
+            document.getElementById('newsTitle').value = data.title;
+            document.getElementById('newsCategory').value = data.type;
+            document.getElementById('newsStatus').value = data.status;
+            document.getElementById('newsExcerpt').value = data.excerpt || '';
+            
+            // Set data cho CKEditor
+            if (editor) {
+                editor.setData(data.content);
+            } else {
+                document.getElementById('newsContent').value = data.content;
+            }
+
+            if (data.thumbnail) {
+                thumbnailPreview.src = '/storage/' + data.thumbnail;
+                thumbnailPreview.classList.remove('hidden');
+                thumbnailIcon.classList.add('hidden');
+            } else {
+                resetThumbnail();
+            }
+
+            openModal(newsModal);
+        });
+    };
+
+    window.confirmDelete = function(id) {
+        deleteId = id;
+        openModal(deleteModal);
+    };
+
+    window.toggleStatus = function(id) {
+        fetch(ARTICLE_ROUTES.toggle.replace(':id', id), {
+            method: 'PATCH',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                const btn = document.querySelector(`tr[data-id="${id}"] .btn-status-toggle`);
+                const isPublished = btn.textContent.trim() === 'Hiển thị';
+                
+                if (isPublished) {
+                    btn.textContent = 'Đang ẩn';
+                    btn.classList.replace('bg-emerald-500/10', 'bg-gray-500/10');
+                    btn.classList.replace('text-emerald-400', 'text-gray-400');
+                    btn.classList.replace('border-emerald-500/20', 'border-gray-500/20');
+                } else {
+                    btn.textContent = 'Hiển thị';
+                    btn.classList.replace('bg-gray-500/10', 'bg-emerald-500/10');
+                    btn.classList.replace('text-gray-400', 'text-emerald-400');
+                    btn.classList.replace('border-gray-500/20', 'border-emerald-500/20');
                 }
-                reader.readAsDataURL(e.target.files[0]);
             }
         });
-    }
+    };
 
     function resetThumbnail() {
-        if (thumbnailPreview) {
-            thumbnailPreview.src = '';
-            thumbnailPreview.classList.add('hidden');
-        }
-        if (thumbnailIcon) thumbnailIcon.classList.remove('hidden');
+        thumbnailPreview.src = '';
+        thumbnailPreview.classList.add('hidden');
+        thumbnailIcon.classList.remove('hidden');
+        thumbnailUpload.value = '';
     }
 
     function openModal(modal) {
-        if (!modal) return;
         modal.classList.remove('hidden');
-        void modal.offsetWidth;
-        const modalContent = modal.querySelector('div.transform');
-        if (modalContent) {
-            modalContent.classList.remove('scale-95', 'opacity-0');
-            modalContent.classList.add('scale-100', 'opacity-100');
-        }
     }
 
-    function closeAllModals() {
-        const modals = [newsModal, deleteModal];
-        modals.forEach(modal => {
-            if (!modal || modal.classList.contains('hidden')) return;
-            const modalContent = modal.querySelector('div.transform');
-            if (modalContent) {
-                modalContent.classList.remove('scale-100', 'opacity-100');
-                modalContent.classList.add('scale-95', 'opacity-0');
-            }
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-        });
+    function closeModal(modal) {
+        modal.classList.add('hidden');
+        if (editor) editor.setData('');
     }
 
-    window.addEventListener('click', (e) => {
-        if (e.target.classList.contains('fixed') && e.target.classList.contains('inset-0')) {
-            closeAllModals();
-        }
-    });
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `fixed bottom-5 right-5 z-[100] px-6 py-3 rounded-lg shadow-xl text-white font-bold transform translate-y-20 transition-all duration-300 ${type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.classList.replace('translate-y-20', 'translate-y-0'), 10);
+        setTimeout(() => {
+            toast.classList.replace('translate-y-0', 'translate-y-20');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
 });

@@ -111,9 +111,31 @@ class HomeController extends Controller
         }
 
         $trendingArticles = \App\Models\Article::where('status', 'published')
-            ->inRandomOrder()->take(5)->get();
+            ->orderBy('views', 'desc')->take(5)->get();
 
         return view('clients.pages.tintuc', compact('featuredArticle', 'articles', 'trendingArticles'));
+    }
+
+    public function tintucchitiet($slug)
+    {
+        $article = \App\Models\Article::where('slug', $slug)
+            ->where('status', 'published')
+            ->firstOrFail();
+            
+        // Tăng lượt xem
+        $article->increment('views');
+        
+        $relatedArticles = \App\Models\Article::where('status', 'published')
+            ->where('type', $article->type)
+            ->where('id', '!=', $article->id)
+            ->latest()
+            ->take(3)
+            ->get();
+            
+        $trendingArticles = \App\Models\Article::where('status', 'published')
+            ->orderBy('views', 'desc')->take(5)->get();
+
+        return view('clients.pages.tintucchitiet', compact('article', 'relatedArticles', 'trendingArticles'));
     }
 
     public function hotro()
@@ -158,7 +180,14 @@ class HomeController extends Controller
             'bank_type' => 'required|in:mbbank,momo'
         ]);
 
-        $category_id = $request->bank_type == 'momo' ? 5 : 4;
+        // Lấy ID danh mục tự động dựa trên loại
+        $category = \App\Models\DepositCategory::where('type', $request->bank_type == 'momo' ? 'ewallet' : 'bank')->first();
+        
+        if (!$category) {
+            return response()->json(['success' => false, 'message' => 'Hệ thống nạp tiền này đang bảo trì!']);
+        }
+
+        $category_id = $category->id;
         $received_amount = $request->amount * 1.15;
 
         \App\Models\Deposit::create([

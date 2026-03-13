@@ -57,7 +57,16 @@ class GameCategoryController extends Controller
         $category = new GameCategory();
         $category->game_id = $request->game_id;
         $category->name = $request->name;
-        $category->slug = Str::slug($request->name);
+        $baseSlug = Str::slug($request->name);
+        $slug = $baseSlug;
+        $counter = 1;
+        
+        while (GameCategory::where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+        
+        $category->slug = $slug;
         $category->status = $request->status === 'active' ? 1 : 0;
         $category->description = $request->description;
 
@@ -94,7 +103,17 @@ class GameCategoryController extends Controller
         
         $category->game_id = $request->game_id;
         $category->name = $request->name;
-        $category->slug = Str::slug($request->name);
+        $baseSlug = Str::slug($request->name);
+        $slug = $baseSlug;
+        $counter = 1;
+
+        // Kiểm tra slug hiện tại có trùng với slug mới không (để tránh tự trùng chính nó khi không đổi tên)
+        while (GameCategory::where('slug', $slug)->where('id', '!=', $id)->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+        
+        $category->slug = $slug;
         $category->status = $request->status === 'active' ? 1 : 0;
         $category->description = $request->description;
 

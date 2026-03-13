@@ -21,27 +21,27 @@
 <div class="admin-container">
     <!-- Filters -->
     <div class="glass-panel p-6 rounded-xl mb-6">
-        <form class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <form action="{{ route('admin.lichsubanhang') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
-                <label class="block text-sm font-medium text-gray-400 mb-1.5">Mã Giao Dịch</label>
-                <input type="text" class="w-full bg-[#13131A] border border-[#2a2d35] rounded-lg px-4 py-2.5 text-white focus:border-[#E70814] focus:ring-1 focus:ring-[#E70814] transition-all" placeholder="Nhập mã GD...">
+                <label class="block text-sm font-medium text-gray-400 mb-1.5">Mã Giao Dịch / ID Nick</label>
+                <input type="text" name="search" value="{{ request('search') }}" class="w-full bg-[#13131A] border border-[#2a2d35] rounded-lg px-4 py-2.5 text-white focus:border-[#E70814] focus:ring-1 focus:ring-[#E70814] transition-all" placeholder="Nhập mã GD hoặc ID Nick...">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-400 mb-1.5">Từ Ngày</label>
-                <input type="date" class="w-full bg-[#13131A] border border-[#2a2d35] rounded-lg px-4 py-2.5 text-white focus:border-[#E70814] focus:ring-1 focus:ring-[#E70814] transition-all">
+                <input type="date" name="start_date" value="{{ request('start_date') }}" class="w-full bg-[#13131A] border border-[#2a2d35] rounded-lg px-4 py-2.5 text-white focus:border-[#E70814] focus:ring-1 focus:ring-[#E70814] transition-all">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-400 mb-1.5">Đến Ngày</label>
-                <input type="date" class="w-full bg-[#13131A] border border-[#2a2d35] rounded-lg px-4 py-2.5 text-white focus:border-[#E70814] focus:ring-1 focus:ring-[#E70814] transition-all">
+                <input type="date" name="end_date" value="{{ request('end_date') }}" class="w-full bg-[#13131A] border border-[#2a2d35] rounded-lg px-4 py-2.5 text-white focus:border-[#E70814] focus:ring-1 focus:ring-[#E70814] transition-all">
             </div>
             <div class="flex gap-2">
-                <button type="button" class="flex-1 bg-[#E70814] hover:bg-red-600 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all shadow-[0_4px_12px_rgba(231,8,20,0.2)]">
+                <button type="submit" class="flex-1 bg-[#E70814] hover:bg-red-600 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all shadow-[0_4px_12px_rgba(231,8,20,0.2)]">
                     <span class="material-symbols-outlined text-[20px]">search</span>
                     Tìm kiếm
                 </button>
-                <button type="reset" class="px-4 py-2.5 bg-[#20222a] hover:bg-[#2a2d35] text-gray-400 hover:text-white rounded-lg transition-colors border border-[#2a2d35]">
-                    <span class="material-symbols-outlined px-1">refresh</span>
-                </button>
+                <a href="{{ route('admin.lichsubanhang') }}" class="px-4 py-2.5 bg-[#20222a] hover:bg-[#2a2d35] text-gray-400 hover:text-white rounded-lg transition-colors border border-[#2a2d35] flex items-center justify-center">
+                    <span class="material-symbols-outlined">refresh</span>
+                </a>
             </div>
         </form>
     </div>
@@ -73,94 +73,55 @@
                     </tr>
                 </thead>
                 <tbody class="text-sm border-b border-[#2a2d35]">
-                    <!-- Sample Row 1 -->
+                    @forelse($orders as $order)
                     <tr class="border-b border-[#2a2d35]/50 hover:bg-[#20222a]/50 transition-colors">
-                        <td class="py-4 px-6 font-mono text-[#E70814]">#TXN-998811</td>
+                        <td class="py-4 px-6 font-mono text-[#E70814]">#{{ $order->id }}</td>
                         <td class="py-4 px-6">
                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-[#1a1c23] flex items-center justify-center text-gray-400 font-bold border border-[#2a2d35]">
-                                    N
+                                <div class="w-8 h-8 rounded-full bg-[#1a1c23] flex items-center justify-center text-gray-400 font-bold border border-[#2a2d35] uppercase">
+                                    {{ substr($order->buyer->name ?? 'U', 0, 1) }}
                                 </div>
                                 <div>
-                                    <div class="font-medium text-white">Nguyen Van A</div>
-                                    <div class="text-xs text-gray-500">ID: USER-1029</div>
+                                    <div class="font-medium text-white">{{ $order->buyer->name ?? 'N/A' }}</div>
+                                    <div class="text-xs text-gray-500">ID: {{ $order->buyer->id ?? 'Unknown' }}</div>
                                 </div>
                             </div>
                         </td>
                         <td class="py-4 px-6">
-                            <div class="font-medium text-white mb-0.5">Nick Liên Quân VIP</div>
-                            <div class="text-xs text-gray-500 bg-[#13131A] inline-block px-2 py-0.5 rounded border border-[#2a2d35]">ID: NICK-5541</div>
+                            <div class="font-medium text-white mb-0.5">{{ $order->account->gameCategory->name ?? 'Sản phẩm' }}</div>
+                            <div class="text-xs text-gray-500 bg-[#13131A] inline-block px-2 py-0.5 rounded border border-[#2a2d35]">ID: {{ $order->account_id }}</div>
                         </td>
                         <td class="py-4 px-6 text-right font-bold text-green-500">
-                            500.000đ
+                            {{ number_format($order->amount) }}đ
                         </td>
                         <td class="py-4 px-6">
-                            <span class="status-badge status-success">Thành công</span>
+                            @if($order->status === 'success' || $order->status === 'completed')
+                                <span class="status-badge status-success">Thành công</span>
+                            @else
+                                <span class="status-badge status-failed">{{ $order->status }}</span>
+                            @endif
                         </td>
                         <td class="py-4 px-6 text-gray-400 text-sm">
-                            14:30<br>20/10/2023
+                            {{ $order->created_at->format('H:i') }}<br>{{ $order->created_at->format('d/m/Y') }}
                         </td>
                         <td class="py-4 px-6 text-center">
-                            <button title="Chi tiết" class="view-detail-btn w-8 h-8 rounded-lg bg-[#20222a] hover:bg-[#2a2d35] text-blue-500 flex items-center justify-center transition-colors border border-[#2a2d35] mx-auto">
+                            <button title="Chi tiết" data-id="{{ $order->id }}" class="view-detail-btn w-8 h-8 rounded-lg bg-[#20222a] hover:bg-[#2a2d35] text-blue-500 flex items-center justify-center transition-colors border border-[#2a2d35] mx-auto">
                                 <span class="material-symbols-outlined text-[18px]">visibility</span>
                             </button>
                         </td>
                     </tr>
-                    <!-- Sample Row 2 -->
-                    <tr class="border-b border-[#2a2d35]/50 hover:bg-[#20222a]/50 transition-colors">
-                        <td class="py-4 px-6 font-mono text-[#E70814]">#TXN-998810</td>
-                        <td class="py-4 px-6">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-[#1a1c23] flex items-center justify-center text-gray-400 font-bold border border-[#2a2d35]">
-                                    T
-                                </div>
-                                <div>
-                                    <div class="font-medium text-white">Tran Thi B</div>
-                                    <div class="text-xs text-gray-500">ID: USER-8832</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-4 px-6">
-                            <div class="font-medium text-white mb-0.5">Nick Free Fire Siêu Rẻ</div>
-                            <div class="text-xs text-gray-500 bg-[#13131A] inline-block px-2 py-0.5 rounded border border-[#2a2d35]">ID: NICK-1123</div>
-                        </td>
-                        <td class="py-4 px-6 text-right font-bold text-green-500">
-                            150.000đ
-                        </td>
-                        <td class="py-4 px-6">
-                            <span class="status-badge status-failed">Thất bại</span>
-                        </td>
-                        <td class="py-4 px-6 text-gray-400 text-sm">
-                            09:15<br>20/10/2023
-                        </td>
-                        <td class="py-4 px-6 text-center">
-                            <button title="Chi tiết" class="view-detail-btn w-8 h-8 rounded-lg bg-[#20222a] hover:bg-[#2a2d35] text-blue-500 flex items-center justify-center transition-colors border border-[#2a2d35] mx-auto">
-                                <span class="material-symbols-outlined text-[18px]">visibility</span>
-                            </button>
-                        </td>
+                    @empty
+                    <tr>
+                        <td colspan="7" class="py-10 text-center text-gray-500 italic">Không tìm thấy giao dịch nào.</td>
                     </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
         
         <!-- Pagination -->
-        <div class="p-4 border-t border-[#2a2d35] flex items-center justify-between">
-            <div class="text-sm text-gray-400">
-                Hiển thị <span class="text-white font-medium">1</span> - <span class="text-white font-medium">10</span> trong <span class="text-white font-medium">256</span> giao dịch
-            </div>
-            <div class="flex items-center gap-1">
-                <button class="w-8 h-8 flex items-center justify-center rounded bg-[#13131A] border border-[#2a2d35] text-gray-500 cursor-not-allowed">
-                    <span class="material-symbols-outlined text-[18px]">chevron_left</span>
-                </button>
-                <button class="w-8 h-8 flex items-center justify-center rounded bg-[#E70814] text-white font-medium">1</button>
-                <button class="w-8 h-8 flex items-center justify-center rounded bg-[#13131A] border border-[#2a2d35] text-gray-400 hover:text-white hover:bg-[#20222a] transition-colors">2</button>
-                <button class="w-8 h-8 flex items-center justify-center rounded bg-[#13131A] border border-[#2a2d35] text-gray-400 hover:text-white hover:bg-[#20222a] transition-colors">3</button>
-                <span class="text-gray-500 px-1">...</span>
-                <button class="w-8 h-8 flex items-center justify-center rounded bg-[#13131A] border border-[#2a2d35] text-gray-400 hover:text-white hover:bg-[#20222a] transition-colors">26</button>
-                <button class="w-8 h-8 flex items-center justify-center rounded bg-[#13131A] border border-[#2a2d35] text-gray-400 hover:text-white hover:bg-[#20222a] transition-colors">
-                    <span class="material-symbols-outlined text-[18px]">chevron_right</span>
-                </button>
-            </div>
+        <div class="p-4 border-t border-[#2a2d35]">
+            {{ $orders->appends(request()->query())->links('vendor.pagination.tailwind-admin') }}
         </div>
     </div>
 </div>

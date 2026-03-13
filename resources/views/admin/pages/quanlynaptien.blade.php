@@ -39,7 +39,7 @@
         <div class="flex justify-between items-center relative z-10">
             <div>
                 <p class="text-gray-400 text-sm font-medium mb-1">Nạp Hôm Nay</p>
-                <h3 class="text-2xl font-bold text-white">1,250,000đ</h3>
+                <h3 class="text-2xl font-bold text-white">{{ number_format($todayDeposit) }}đ</h3>
             </div>
             <div class="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
                 <span class="material-symbols-outlined text-[28px]">today</span>
@@ -50,7 +50,7 @@
         <div class="flex justify-between items-center relative z-10">
             <div>
                 <p class="text-gray-400 text-sm font-medium mb-1">Thành Công (Tháng)</p>
-                <h3 class="text-2xl font-bold text-emerald-400">45,600,000đ</h3>
+                <h3 class="text-2xl font-bold text-emerald-400">{{ number_format($monthDeposit) }}đ</h3>
             </div>
             <div class="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
                 <span class="material-symbols-outlined text-[28px]">check_circle</span>
@@ -61,7 +61,7 @@
         <div class="flex justify-between items-center relative z-10">
             <div>
                 <p class="text-gray-400 text-sm font-medium mb-1">Đang Chờ Duyệt</p>
-                <h3 class="text-2xl font-bold text-yellow-500">5</h3>
+                <h3 class="text-2xl font-bold text-yellow-500">{{ number_format($pendingCount) }}</h3>
             </div>
             <div class="w-12 h-12 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500">
                 <span class="material-symbols-outlined text-[28px]">pending_actions</span>
@@ -72,7 +72,7 @@
         <div class="flex justify-between items-center relative z-10">
             <div>
                 <p class="text-gray-400 text-sm font-medium mb-1">Từ Chối / Lỗi</p>
-                <h3 class="text-2xl font-bold text-[#E70814]">12</h3>
+                <h3 class="text-2xl font-bold text-[#E70814]">{{ number_format($failedCount) }}</h3>
             </div>
             <div class="w-12 h-12 rounded-full bg-[#E70814]/10 flex items-center justify-center text-[#E70814]">
                 <span class="material-symbols-outlined text-[28px]">cancel</span>
@@ -128,122 +128,94 @@
                 </tr>
             </thead>
             <tbody class="text-sm divide-y divide-[#2a2d35]">
-                <tr class="hover:bg-[#1a1c23] transition-colors group transaction-row" data-search="GD10239 user123" data-status="pending">
-                    <td class="p-4 text-center font-medium text-gray-400">#GD10239</td>
+                @forelse($deposits as $deposit)
+                <tr class="hover:bg-[#1a1c23] transition-colors group transaction-row" data-id="{{ $deposit->id }}" data-search="{{ $deposit->id }} {{ $deposit->user->name ?? '' }}" data-status="{{ $deposit->status }}">
+                    <td class="p-4 text-center font-medium text-gray-400">#{{ $deposit->id }}</td>
                     <td class="p-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-blue-500/20 text-blue-500 flex items-center justify-center font-bold text-xs uppercase">US</div>
+                            <div class="w-8 h-8 rounded-full bg-{{ ['admin' => 'red', 'agent' => 'blue', 'member' => 'gray'][$deposit->user->role ?? 'member'] ?? 'gray' }}-500/20 text-{{ ['admin' => 'red', 'agent' => 'blue', 'member' => 'gray'][$deposit->user->role ?? 'member'] ?? 'gray' }}-500 flex items-center justify-center font-bold text-xs uppercase">
+                                {{ substr($deposit->user->name ?? 'U', 0, 2) }}
+                            </div>
                             <div>
-                                <p class="font-bold text-white group-hover:text-[#E70814] transition-colors">user123</p>
-                                <p class="text-xs text-gray-500 mt-0.5">agent</p>
+                                <p class="font-bold text-white group-hover:text-[#E70814] transition-colors">{{ $deposit->user->name ?? 'N/A' }}</p>
+                                <p class="text-xs text-gray-500 mt-0.5">{{ $deposit->user->role ?? 'user' }}</p>
                             </div>
                         </div>
                     </td>
                     <td class="p-4 text-right font-bold text-white">
-                        500,000đ
+                        <div class="flex flex-col">
+                            <span>{{ number_format($deposit->received_amount) }}đ</span>
+                            @if($deposit->amount != $deposit->received_amount)
+                            <span class="text-[10px] text-gray-500">Gốc: {{ number_format($deposit->amount) }}đ</span>
+                            @endif
+                        </div>
                     </td>
                     <td class="p-4 text-center">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-blue-500/10 text-blue-400 text-xs font-semibold border border-blue-500/20">
-                            <span class="material-symbols-outlined text-[14px]">account_balance</span>
-                            Ngân Hàng
+                        @php
+                            $typeMap = [
+                                'card' => ['icon' => 'sim_card', 'class' => 'bg-orange-500/10 text-orange-400 border-orange-500/20', 'label' => 'Thẻ Cào'],
+                                'bank' => ['icon' => 'account_balance', 'class' => 'bg-blue-500/10 text-blue-400 border-blue-500/20', 'label' => 'Ngân Hàng'],
+                                'ewallet' => ['icon' => 'account_balance_wallet', 'class' => 'bg-purple-500/10 text-purple-400 border-purple-500/20', 'label' => 'Ví Điện Tử'],
+                                'manual' => ['icon' => 'add_circle', 'class' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', 'label' => 'Cộng Thủ Công'],
+                            ];
+                            $type = $typeMap[$deposit->category->type ?? 'bank'] ?? $typeMap['bank'];
+                        @endphp
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded {{ $type['class'] }} text-xs font-semibold border">
+                            <span class="material-symbols-outlined text-[14px]">{{ $type['icon'] }}</span>
+                            {{ $deposit->category->name ?? $type['label'] }}
                         </span>
                     </td>
                     <td class="p-4 text-center text-gray-400 text-xs">
-                        15/10/2026<br>14:30:00
+                        {{ $deposit->created_at->format('d/m/Y') }}<br>{{ $deposit->created_at->format('H:i:s') }}
                     </td>
                     <td class="p-4 text-center">
-                        <span class="inline-block px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 text-xs font-bold">Chờ duyệt</span>
+                        @if($deposit->status === 'pending')
+                            <span class="inline-block px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 text-xs font-bold">Chờ duyệt</span>
+                        @elseif($deposit->status === 'approved' || $deposit->status === 'success')
+                            <span class="inline-block px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs font-bold">Thành công</span>
+                        @else
+                            <span class="inline-block px-3 py-1 rounded-full bg-[#E70814]/10 text-[#E70814] border border-[#E70814]/20 text-xs font-bold">Thất bại</span>
+                        @endif
                     </td>
                     <td class="p-4 text-right relative">
+                        @if($deposit->status === 'pending')
                         <div class="flex items-center justify-end gap-2">
-                            <button class="px-3 py-1.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-colors text-xs font-medium btn-approve" title="Duyệt">
+                            <button class="px-3 py-1.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-colors text-xs font-medium btn-approve" 
+                                data-id="{{ $deposit->id }}" 
+                                data-user="{{ $deposit->user->name ?? 'N/A' }}" 
+                                data-amount="{{ number_format($deposit->received_amount) }} VNĐ"
+                                title="Duyệt">
                                 Duyệt
                             </button>
-                            <button class="px-3 py-1.5 rounded bg-[#E70814]/10 border border-[#E70814]/30 text-[#E70814] hover:bg-[#E70814] hover:text-white transition-colors text-xs font-medium btn-reject" title="Từ chối">
+                            <button class="px-3 py-1.5 rounded bg-[#E70814]/10 border border-[#E70814]/30 text-[#E70814] hover:bg-[#E70814] hover:text-white transition-colors text-xs font-medium btn-reject" 
+                                data-id="{{ $deposit->id }}"
+                                title="Từ chối">
                                 Từ chối
                             </button>
                         </div>
+                        @else
+                            <span class="text-xs text-gray-500 italic">
+                                {{ $deposit->status === 'approved' ? 'Đã duyệt' : 'Đã từ chối' }}
+                                @if(isset($deposit->details['reject_reason']))
+                                    <button class="ml-1 text-[#E70814] hover:underline btn-view-reason-direct" data-reason="{{ $deposit->details['reject_reason'] }}"> Lý do</button>
+                                @endif
+                            </span>
+                        @endif
                     </td>
                 </tr>
-
-                <tr class="hover:bg-[#1a1c23] transition-colors group transaction-row" data-search="GD10238 minhquan" data-status="success">
-                    <td class="p-4 text-center font-medium text-gray-400">#GD10238</td>
-                    <td class="p-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center font-bold text-xs uppercase">MQ</div>
-                            <div>
-                                <p class="font-bold text-white group-hover:text-[#E70814] transition-colors">minhquan</p>
-                                <p class="text-xs text-gray-500 mt-0.5">member</p>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="p-4 text-right font-bold text-white">
-                        100,000đ
-                    </td>
-                    <td class="p-4 text-center">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-orange-500/10 text-orange-400 text-xs font-semibold border border-orange-500/20">
-                            <span class="material-symbols-outlined text-[14px]">sim_card</span>
-                            Thẻ Cào
-                        </span>
-                    </td>
-                    <td class="p-4 text-center text-gray-400 text-xs">
-                        15/10/2026<br>10:15:22
-                    </td>
-                    <td class="p-4 text-center">
-                        <span class="inline-block px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs font-bold">Thành công</span>
-                    </td>
-                    <td class="p-4 text-right relative">
-                        <span class="text-xs text-gray-500 italic">Đã xử lý (Auto)</span>
-                    </td>
+                @empty
+                <tr>
+                    <td colspan="7" class="p-8 text-center text-gray-500 italic">Không tìm thấy giao dịch nào.</td>
                 </tr>
-
-                <tr class="hover:bg-[#1a1c23] transition-colors group transaction-row" data-search="GD10237 kiennguyen" data-status="failed">
-                    <td class="p-4 text-center font-medium text-gray-400">#GD10237</td>
-                    <td class="p-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-xs uppercase">KN</div>
-                            <div>
-                                <p class="font-bold text-white group-hover:text-[#E70814] transition-colors">kiennguyen</p>
-                                <p class="text-xs text-gray-500 mt-0.5">agent</p>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="p-4 text-right font-bold text-white">
-                        2,000,000đ
-                    </td>
-                    <td class="p-4 text-center">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-blue-500/10 text-blue-400 text-xs font-semibold border border-blue-500/20">
-                            <span class="material-symbols-outlined text-[14px]">account_balance</span>
-                            Ngân Hàng
-                        </span>
-                    </td>
-                    <td class="p-4 text-center text-gray-400 text-xs">
-                        15/10/2026<br>09:12:05
-                    </td>
-                    <td class="p-4 text-center">
-                        <span class="inline-block px-3 py-1 rounded-full bg-[#E70814]/10 text-[#E70814] border border-[#E70814]/20 text-xs font-bold">Đã từ chối</span>
-                    </td>
-                    <td class="p-4 text-right relative">
-                        <button class="px-3 py-1.5 rounded bg-gray-700/50 border border-gray-600 text-gray-400 hover:bg-gray-600 hover:text-white transition-colors text-xs font-medium btn-view-reason" title="Xem lý do">
-                            Lý do
-                        </button>
-                    </td>
-                </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
 </div>
 
 <!-- Pagination -->
-<div class="mt-6 flex justify-between items-center">
-    <p class="text-sm text-gray-400">Hiển thị <span class="text-white font-medium">1</span> - <span class="text-white font-medium">10</span> trong số <span class="text-white font-medium">120</span> giao dịch</p>
-    <div class="flex gap-1">
-        <button class="w-8 h-8 flex items-center justify-center rounded bg-[#20222a] border border-[#2a2d35] text-gray-400 hover:text-white transition-colors"><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
-        <button class="w-8 h-8 flex items-center justify-center rounded bg-[#E70814] text-white font-medium">1</button>
-        <button class="w-8 h-8 flex items-center justify-center rounded bg-[#20222a] border border-[#2a2d35] text-gray-400 hover:text-white transition-colors">2</button>
-        <button class="w-8 h-8 flex items-center justify-center rounded bg-[#20222a] border border-[#2a2d35] text-gray-400 hover:text-white transition-colors">3</button>
-        <button class="w-8 h-8 flex items-center justify-center rounded bg-[#20222a] border border-[#2a2d35] text-gray-400 hover:text-white transition-colors"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button>
-    </div>
+<div class="mt-6">
+    {{ $deposits->links('vendor.pagination.tailwind-admin') }}
 </div>
 
 <!-- Modal Duyệt Nạp Tiền -->

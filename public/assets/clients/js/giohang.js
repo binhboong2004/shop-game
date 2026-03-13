@@ -132,43 +132,67 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputCoupon = document.getElementById('coupon-code');
     const msgCoupon = document.getElementById('coupon-message');
 
-    btnApplyCoupon.addEventListener('click', () => {
+    btnApplyCoupon.addEventListener('click', async () => {
         const code = inputCoupon.value.trim().toUpperCase();
 
-        msgCoupon.classList.remove('hidden');
+        msgCoupon.classList.add('hidden');
 
         if (subtotal === 0) {
             msgCoupon.textContent = 'Giỏ hàng đang trống.';
             msgCoupon.className = 'text-xs mt-2 font-medium text-red-500 block';
+            msgCoupon.classList.remove('hidden');
             return;
         }
 
         if (code === '') {
             msgCoupon.textContent = 'Vui lòng nhập mã giảm giá.';
             msgCoupon.className = 'text-xs mt-2 font-medium text-red-500 block';
+            msgCoupon.classList.remove('hidden');
             discount = 0;
             updateTotals();
             return;
         }
 
-        // Demo các mã giảm giá
-        if (code === 'SHOPNICK50K') {
-            discount = 50000;
-            msgCoupon.textContent = 'Áp dụng thành công! Giảm 50.000đ.';
-            msgCoupon.className = 'text-xs mt-2 font-medium text-emerald-500 block';
-        } else if (code === 'FREESHIP') { // Vui thôi chứ nick số thì làm gì có ship :)
-            discount = 20000;
-            msgCoupon.textContent = 'Áp dụng thành công! Giảm 20.000đ.';
-            msgCoupon.className = 'text-xs mt-2 font-medium text-emerald-500 block';
-        } else {
-            discount = 0;
-            msgCoupon.textContent = 'Mã giảm giá không hợp lệ hoặc đã hết hạn.';
+        btnApplyCoupon.disabled = true;
+        btnApplyCoupon.innerHTML = '<span class="material-symbols-outlined animate-spin text-[18px]">refresh</span>';
+
+        try {
+            const response = await fetch('/coupon/apply', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({
+                    code: code,
+                    subtotal: subtotal
+                })
+            });
+
+            const data = await response.json();
+
+            msgCoupon.classList.remove('hidden');
+            
+            if (data.success) {
+                discount = data.data.discount_amount;
+                msgCoupon.textContent = data.message;
+                msgCoupon.className = 'text-xs mt-2 font-medium text-emerald-500 block';
+            } else {
+                discount = 0;
+                msgCoupon.textContent = data.message;
+                msgCoupon.className = 'text-xs mt-2 font-medium text-red-500 block';
+            }
+            updateTotals();
+
+        } catch (error) {
+            console.error('Coupon error:', error);
+            msgCoupon.textContent = 'Có lỗi xảy ra, vui lòng thử lại.';
             msgCoupon.className = 'text-xs mt-2 font-medium text-red-500 block';
+            msgCoupon.classList.remove('hidden');
+        } finally {
+            btnApplyCoupon.disabled = false;
+            btnApplyCoupon.innerText = 'Áp dụng';
         }
-
-        if (discount > subtotal) discount = subtotal; // Không giảm lố tiền
-
-        updateTotals();
     });
 
     // Nhấn Enter để áp dụng mã
@@ -232,20 +256,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
 
                 if (response.ok && data.success) {
-                    alert(data.message); // Could replace with a proper UI toast/modal
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
+                    if (window.showToast) {
+                        window.showToast(data.message, 'success');
                     } else {
-                        window.location.reload();
+                        alert(data.message);
                     }
+                    
+                    setTimeout(() => {
+                        if (data.redirect) {
+                            window.location.href = data.redirect;
+                        } else {
+                            window.location.reload();
+                        }
+                    }, 1500);
                 } else {
-                    alert(data.message || 'Lỗi khi thanh toán. Vui lòng thử lại sau.');
+                    if (window.showToast) {
+                        window.showToast(data.message || 'Lỗi khi thanh toán. Vui lòng thử lại sau.', 'error');
+                    } else {
+                        alert(data.message || 'Lỗi khi thanh toán. Vui lòng thử lại sau.');
+                    }
                     btnCheckout.innerHTML = orgHTML;
                     btnCheckout.disabled = false;
                 }
             } catch (error) {
                 console.error('Checkout error:', error);
-                alert('Có lỗi xảy ra trong quá trình thanh toán, vui lòng kiểm tra kết nối mạng và thử lại.');
+                if (window.showToast) {
+                    window.showToast('Có lỗi xảy ra trong quá trình thanh toán, vui lòng kiểm tra kết nối mạng và thử lại.', 'error');
+                } else {
+                    alert('Có lỗi xảy ra trong quá trình thanh toán, vui lòng kiểm tra kết nối mạng và thử lại.');
+                }
                 btnCheckout.innerHTML = orgHTML;
                 btnCheckout.disabled = false;
             }

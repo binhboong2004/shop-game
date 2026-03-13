@@ -21,12 +21,14 @@ Route::get('/sanpham', [HomeController::class, 'sanpham'])->name('sanpham');
 Route::get('/sanphamchitiet/{id}', [HomeController::class, 'sanphamchitiet'])->name('sanphamchitiet');
 
 Route::get('/tintuc', [HomeController::class, 'tintuc'])->name('tintuc');
+Route::get('/tintuc/{slug}', [HomeController::class, 'tintucchitiet'])->name('tintucchitiet');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/giohang', [CartController::class, 'index'])->name('giohang');
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
     Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+    Route::post('/coupon/apply', [App\Http\Controllers\Clients\CouponController::class, 'apply'])->name('coupon.apply');
 
     Route::get('/yeuthich', [WishlistController::class, 'index'])->name('yeuthich');
     Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
@@ -106,7 +108,7 @@ Route::prefix('agent')->middleware(['auth', 'verified'])->group(function() {
 use App\Http\Controllers\Admin\DashboardController;
 
 // Admin Routes
-Route::prefix('admin')->group(function() {
+Route::prefix('admin')->middleware(['admin'])->group(function() {
     Route::get('/', function () {
         return redirect()->route('admin.dashboard');
     });
@@ -161,9 +163,10 @@ Route::prefix('admin')->group(function() {
         return view('admin.pages.cauhinhchung');
     })->name('admin.cauhinhchung');
 
-    Route::get('/quan-ly-nap-tien', function () {
-        return view('admin.pages.quanlynaptien');
-    })->name('admin.quanlynaptien');
+    Route::get('/quan-ly-nap-tien', [App\Http\Controllers\Admin\DepositController::class, 'index'])->name('admin.quanlynaptien');
+    Route::post('/quan-ly-nap-tien/{id}/approve', [App\Http\Controllers\Admin\DepositController::class, 'approve'])->name('admin.quanlynaptien.approve');
+    Route::post('/quan-ly-nap-tien/{id}/reject', [App\Http\Controllers\Admin\DepositController::class, 'reject'])->name('admin.quanlynaptien.reject');
+    Route::post('/quan-ly-nap-tien/manual-add', [App\Http\Controllers\Admin\DepositController::class, 'manualAdd'])->name('admin.quanlynaptien.manualAdd');
 
     Route::get('/quan-ly-danh-muc', [App\Http\Controllers\Admin\GameController::class, 'index'])->name('admin.quanlydanhmuc');
     Route::post('/quan-ly-danh-muc', [App\Http\Controllers\Admin\GameController::class, 'store'])->name('admin.quanlydanhmuc.store');
@@ -185,17 +188,19 @@ Route::prefix('admin')->group(function() {
     Route::put('/kiem-duyet-nick/{id}/approve', [App\Http\Controllers\Admin\AccountController::class, 'approve'])->name('admin.kiemduyetnick.approve');
     Route::put('/kiem-duyet-nick/{id}/reject', [App\Http\Controllers\Admin\AccountController::class, 'reject'])->name('admin.kiemduyetnick.reject');
 
-    Route::get('/kiem-duyet-rut-tien', function () {
-        return view('admin.pages.kiemduyetruttien');
-    })->name('admin.kiemduyetruttien');     
+    Route::get('/kiem-duyet-rut-tien', [App\Http\Controllers\Admin\WithdrawalController::class, 'index'])->name('admin.kiemduyetruttien');     
+    Route::post('/kiem-duyet-rut-tien/{id}/approve', [App\Http\Controllers\Admin\WithdrawalController::class, 'approve'])->name('admin.kiemduyetruttien.approve');
+    Route::post('/kiem-duyet-rut-tien/{id}/reject', [App\Http\Controllers\Admin\WithdrawalController::class, 'reject'])->name('admin.kiemduyetruttien.reject');
+    Route::delete('/kiem-duyet-rut-tien/{id}', [App\Http\Controllers\Admin\WithdrawalController::class, 'destroy'])->name('admin.kiemduyetruttien.destroy');
 
-    Route::get('/lich-su-ban-hang', function () {
-        return view('admin.pages.lichsubanhang');
-    })->name('admin.lichsubanhang');
+    Route::get('/lich-su-ban-hang', [App\Http\Controllers\Admin\OrderController::class, 'index'])->name('admin.lichsubanhang');
+    Route::get('/lich-su-ban-hang/{id}', [App\Http\Controllers\Admin\OrderController::class, 'show'])->name('admin.lichsubanhang.show');
 
-    Route::get('/ma-giam-gia', function () {
-        return view('admin.pages.magiamgia');
-    })->name('admin.magiamgia');
+    Route::get('/ma-giam-gia', [App\Http\Controllers\Admin\DiscountCodeController::class, 'index'])->name('admin.magiamgia');
+    Route::post('/ma-giam-gia', [App\Http\Controllers\Admin\DiscountCodeController::class, 'store'])->name('admin.magiamgia.store');
+    Route::get('/ma-giam-gia/{id}', [App\Http\Controllers\Admin\DiscountCodeController::class, 'show'])->name('admin.magiamgia.show');
+    Route::put('/ma-giam-gia/{id}', [App\Http\Controllers\Admin\DiscountCodeController::class, 'update'])->name('admin.magiamgia.update');
+    Route::delete('/ma-giam-gia/{id}', [App\Http\Controllers\Admin\DiscountCodeController::class, 'destroy'])->name('admin.magiamgia.destroy');
 
     Route::get('/them-nick-moi', [App\Http\Controllers\Admin\AccountController::class, 'create'])->name('admin.themnickmoi');
     Route::post('/them-nick-moi', [App\Http\Controllers\Admin\AccountController::class, 'store'])->name('admin.themnickmoi.store');
@@ -212,8 +217,12 @@ Route::prefix('admin')->group(function() {
         return view('admin.pages.vongquaymayman');
     })->name('admin.vongquaymayman');
 
-    Route::get('/tin-tuc-su-kien', function () {
-        return view('admin.pages.tintucsukien');
-    })->name('admin.tintucsukien');
+    Route::get('/tin-tuc-su-kien', [App\Http\Controllers\Admin\ArticleController::class, 'index'])->name('admin.tintucsukien');
+    Route::post('/tin-tuc-su-kien', [App\Http\Controllers\Admin\ArticleController::class, 'store'])->name('admin.tintucsukien.store');
+    Route::get('/tin-tuc-su-kien/{article}/edit', [App\Http\Controllers\Admin\ArticleController::class, 'edit'])->name('admin.tintucsukien.edit');
+    Route::post('/tin-tuc-su-kien/{article}/update', [App\Http\Controllers\Admin\ArticleController::class, 'update'])->name('admin.tintucsukien.update');
+    Route::delete('/tin-tuc-su-kien/{article}', [App\Http\Controllers\Admin\ArticleController::class, 'destroy'])->name('admin.tintucsukien.destroy');
+    Route::patch('/tin-tuc-su-kien/{article}/toggle-status', [App\Http\Controllers\Admin\ArticleController::class, 'toggleStatus'])->name('admin.tintucsukien.toggleStatus');
+    Route::post('/tin-tuc-su-kien/upload-image', [App\Http\Controllers\Admin\ArticleController::class, 'uploadImage'])->name('admin.tintucsukien.uploadImage');
 });
 

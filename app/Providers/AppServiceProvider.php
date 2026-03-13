@@ -31,7 +31,13 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('admin.partials.sidebar', function ($view) {
             $pendingAccountsCount = \App\Models\Account::where('status', 'pending_approval')->count();
-            $view->with('pendingAccountsCount', $pendingAccountsCount);
+            $pendingDepositsCount = \App\Models\Deposit::where('status', 'pending')->count();
+            $pendingWithdrawalsCount = \App\Models\Withdrawal::where('status', 'pending')->count();
+            $view->with([
+                'pendingAccountsCount' => $pendingAccountsCount,
+                'pendingDepositsCount' => $pendingDepositsCount,
+                'pendingWithdrawalsCount' => $pendingWithdrawalsCount
+            ]);
         });
 
         \Illuminate\Auth\Notifications\VerifyEmail::toMailUsing(function (object $notifiable, string $url) {

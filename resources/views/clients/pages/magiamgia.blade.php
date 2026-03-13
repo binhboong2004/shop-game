@@ -60,13 +60,9 @@
                         <button class="filter-tab active" data-filter="all"><span
                                 class="material-symbols-outlined text-[16px]">grid_view</span> Tất cả</button>
                         <button class="filter-tab" data-filter="percent"><span
-                                class="material-symbols-outlined text-[16px]">percent</span> Giảm %</button>
+                                class="material-symbols-outlined text-[16px]"></span> Giảm %</button>
                         <button class="filter-tab" data-filter="fixed"><span
                                 class="material-symbols-outlined text-[16px]">payments</span> Giảm tiền</button>
-                        <button class="filter-tab" data-filter="freeship"><span
-                                class="material-symbols-outlined text-[16px]">local_shipping</span> Miễn phí</button>
-                        <button class="filter-tab" data-filter="hot"><span
-                                class="material-symbols-outlined text-[16px]">local_fire_department</span> Hot</button>
                     </div>
                     <div class="search-input-wrapper w-full md:w-[280px]">
                         <span class="material-symbols-outlined text-[18px] text-primary/50">search</span>

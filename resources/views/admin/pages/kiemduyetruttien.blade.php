@@ -29,7 +29,7 @@
         <div class="flex justify-between items-center relative z-10">
             <div>
                 <p class="text-gray-400 text-sm font-medium mb-1">Tổng Số Yêu Cầu</p>
-                <h3 class="text-2xl font-bold text-white">45</h3>
+                <h3 class="text-2xl font-bold text-white">{{ $totalYc }}</h3>
             </div>
             <div class="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
                 <span class="material-symbols-outlined text-[28px]">payments</span>
@@ -40,7 +40,7 @@
         <div class="flex justify-between items-center relative z-10">
             <div>
                 <p class="text-gray-400 text-sm font-medium mb-1">Đang Chờ Duyệt</p>
-                <h3 class="text-2xl font-bold text-yellow-500">8</h3>
+                <h3 class="text-2xl font-bold text-yellow-500">{{ $pendingCount }}</h3>
             </div>
             <div class="w-12 h-12 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500">
                 <span class="material-symbols-outlined text-[28px]">pending_actions</span>
@@ -51,7 +51,7 @@
         <div class="flex justify-between items-center relative z-10">
             <div>
                 <p class="text-gray-400 text-sm font-medium mb-1">Đã Duyệt</p>
-                <h3 class="text-2xl font-bold text-emerald-400">32</h3>
+                <h3 class="text-2xl font-bold text-emerald-400">{{ $approvedCount }}</h3>
             </div>
             <div class="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
                 <span class="material-symbols-outlined text-[28px]">check_circle</span>
@@ -62,7 +62,7 @@
         <div class="flex justify-between items-center relative z-10">
             <div>
                 <p class="text-gray-400 text-sm font-medium mb-1">Đã Từ Chối</p>
-                <h3 class="text-2xl font-bold text-[#E70814]">5</h3>
+                <h3 class="text-2xl font-bold text-[#E70814]">{{ $rejectedCount }}</h3>
             </div>
             <div class="w-12 h-12 rounded-full bg-[#E70814]/10 flex items-center justify-center text-[#E70814]">
                 <span class="material-symbols-outlined text-[28px]">cancel</span>
@@ -123,136 +123,70 @@
                 </tr>
             </thead>
             <tbody class="text-sm divide-y divide-[#2a2d35]">
-                <tr class="hover:bg-[#1a1c23] transition-colors group withdraw-row" data-search="Nguyễn Văn A AGENT001" data-status="pending" data-date="today">
-                    <td class="p-4 text-center font-medium text-gray-400">#RT0125</td>
+                @forelse($withdrawals as $withdraw)
+                <tr class="hover:bg-[#1a1c23] transition-colors group withdraw-row" data-id="{{ $withdraw->id }}" data-search="{{ $withdraw->agent->name ?? 'N/A' }} {{ $withdraw->agent->id ?? '' }}" data-status="{{ $withdraw->status }}">
+                    <td class="p-4 text-center font-medium text-gray-400">#{{ $withdraw->id }}</td>
                     <td class="p-4">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full bg-[#13131A] border border-[#2a2d35] flex items-center justify-center text-gray-400 font-bold uppercase overflow-hidden">
                                 <span class="material-symbols-outlined">person</span>
                             </div>
                             <div>
-                                <h4 class="font-semibold text-white group-hover:text-[#E70814] transition-colors">Nguyễn Văn A</h4>
-                                <span class="text-xs text-gray-500 uppercase tracking-widest font-bold">ID: AGENT001</span>
+                                <h4 class="font-semibold text-white group-hover:text-[#E70814] transition-colors">{{ $withdraw->agent->name ?? 'N/A' }}</h4>
+                                <span class="text-xs text-gray-500 uppercase tracking-widest font-bold">ID: {{ $withdraw->agent->id ?? 'N/A' }}</span>
                             </div>
                         </div>
                     </td>
                     <td class="p-4 font-bold text-lg text-white">
-                        5,000,000đ
+                        {{ number_format($withdraw->amount) }}đ
                     </td>
                     <td class="p-4">
-                        <div class="text-white font-medium">10123456789</div>
-                        <div class="text-gray-400 text-xs">Ngân hàng: <span class="text-blue-400 font-bold">VCB</span> | Tên: NGUYEN VAN A</div>
+                        <div class="text-white font-medium">{{ $withdraw->account_number }}</div>
+                        <div class="text-gray-400 text-xs">Ngân hàng: <span class="text-blue-400 font-bold">{{ $withdraw->bank_name }}</span> | Tên: {{ $withdraw->account_name }}</div>
                     </td>
                     <td class="p-4 text-gray-400 text-sm">
-                        Hôm nay 10:24<br>
-                        <span class="text-xs text-gray-500">20/03/2026</span>
+                        {{ $withdraw->created_at->format('H:i') }}<br>
+                        <span class="text-xs text-gray-500">{{ $withdraw->created_at->format('d/m/Y') }}</span>
                     </td>
                     <td class="p-4 text-center">
-                        <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">Đang chờ</span>
+                        @if($withdraw->status === 'pending')
+                            <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">Đang chờ</span>
+                        @elseif($withdraw->status === 'approved')
+                            <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Thành công</span>
+                        @else
+                            <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-[#E70814]/10 text-[#E70814] border border-[#E70814]/20">Từ chối</span>
+                            @if($withdraw->note)
+                            <div class="text-[10px] text-gray-500 mt-1 cursor-pointer hover:underline btn-view-note" data-note="{{ $withdraw->note }}">Xem lý do</div>
+                            @endif
+                        @endif
                     </td>
                     <td class="p-4 text-right">
                         <div class="flex items-center justify-end gap-2">
-                            <button class="w-8 h-8 rounded bg-[#13131A] border border-[#2a2d35] text-emerald-400 hover:bg-emerald-500 hover:text-white transition-colors flex items-center justify-center btn-approve" title="Duyệt yêu cầu" data-id="RT0125" data-agent="Nguyễn Văn A" data-amount="5,000,000đ">
+                            @if($withdraw->status === 'pending')
+                            <button class="w-8 h-8 rounded bg-[#13131A] border border-[#2a2d35] text-emerald-400 hover:bg-emerald-500 hover:text-white transition-colors flex items-center justify-center btn-approve" title="Duyệt yêu cầu" data-id="{{ $withdraw->id }}" data-agent="{{ $withdraw->agent->name ?? 'N/A' }}" data-amount="{{ number_format($withdraw->amount) }}đ">
                                 <span class="material-symbols-outlined text-[18px]">check</span>
                             </button>
-                            <button class="w-8 h-8 rounded bg-[#13131A] border border-[#2a2d35] text-yellow-500 hover:bg-yellow-500 hover:text-white transition-colors flex items-center justify-center btn-reject" title="Từ chối" data-id="RT0125" data-agent="Nguyễn Văn A" data-amount="5,000,000đ">
+                            <button class="w-8 h-8 rounded bg-[#13131A] border border-[#2a2d35] text-yellow-500 hover:bg-yellow-500 hover:text-white transition-colors flex items-center justify-center btn-reject" title="Từ chối" data-id="{{ $withdraw->id }}" data-agent="{{ $withdraw->agent->name ?? 'N/A' }}" data-amount="{{ number_format($withdraw->amount) }}đ">
                                 <span class="material-symbols-outlined text-[18px]">close</span>
                             </button>
-                            <button class="w-8 h-8 rounded bg-[#13131A] border border-[#2a2d35] text-[#E70814] hover:bg-[#E70814] hover:text-white transition-colors flex items-center justify-center btn-delete" title="Xóa bản ghi" data-id="RT0125">
+                            @endif
+                            <button class="w-8 h-8 rounded bg-[#13131A] border border-[#2a2d35] text-[#E70814] hover:bg-[#E70814] hover:text-white transition-colors flex items-center justify-center btn-delete" title="Xóa bản ghi" data-id="{{ $withdraw->id }}">
                                 <span class="material-symbols-outlined text-[18px]">delete_forever</span>
                             </button>
                         </div>
                     </td>
                 </tr>
-
-                <tr class="hover:bg-[#1a1c23] transition-colors group withdraw-row" data-search="Trần Thị B AGENT002" data-status="approved" data-date="today">
-                    <td class="p-4 text-center font-medium text-gray-400">#RT0124</td>
-                    <td class="p-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-[#13131A] border border-[#2a2d35] flex items-center justify-center text-gray-400 font-bold uppercase overflow-hidden">
-                                <span class="material-symbols-outlined">person</span>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-white group-hover:text-[#E70814] transition-colors">Trần Thị B</h4>
-                                <span class="text-xs text-gray-500 uppercase tracking-widest font-bold">ID: AGENT002</span>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="p-4 font-bold text-lg text-white">
-                        2,500,000đ
-                    </td>
-                    <td class="p-4">
-                        <div class="text-white font-medium">987654321</div>
-                        <div class="text-gray-400 text-xs">Ngân hàng: <span class="text-green-500 font-bold">MB Bank</span> | Tên: TRAN THI B</div>
-                    </td>
-                    <td class="p-4 text-gray-400 text-sm">
-                        Hôm nay 08:15<br>
-                        <span class="text-xs text-gray-500">20/03/2026</span>
-                    </td>
-                    <td class="p-4 text-center">
-                        <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Thành công</span>
-                    </td>
-                    <td class="p-4 text-right">
-                        <div class="flex items-center justify-end gap-2">
-                             <button class="w-8 h-8 rounded bg-[#13131A] border border-[#2a2d35] text-[#E70814] hover:bg-[#E70814] hover:text-white transition-colors flex items-center justify-center btn-delete" title="Xóa bản ghi" data-id="RT0124">
-                                <span class="material-symbols-outlined text-[18px]">delete_forever</span>
-                            </button>
-                        </div>
-                    </td>
+                @empty
+                <tr>
+                    <td colspan="7" class="p-10 text-center text-gray-500 italic">Không có yêu cầu rút tiền nào.</td>
                 </tr>
-
-                 <tr class="hover:bg-[#1a1c23] transition-colors group withdraw-row" data-search="Lê Văn C AGENT003" data-status="rejected" data-date="week">
-                    <td class="p-4 text-center font-medium text-gray-400">#RT0123</td>
-                    <td class="p-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-[#13131A] border border-[#2a2d35] flex items-center justify-center text-gray-400 font-bold uppercase overflow-hidden">
-                                <span class="material-symbols-outlined">person</span>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-white group-hover:text-[#E70814] transition-colors">Lê Văn C</h4>
-                                <span class="text-xs text-gray-500 uppercase tracking-widest font-bold">ID: AGENT003</span>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="p-4 font-bold text-lg text-white">
-                        10,000,000đ
-                    </td>
-                    <td class="p-4">
-                        <div class="text-white font-medium">654321098</div>
-                        <div class="text-gray-400 text-xs">Ngân hàng: <span class="text-purple-400 font-bold">TPBank</span> | Tên: LE VAN C</div>
-                    </td>
-                    <td class="p-4 text-gray-400 text-sm">
-                        Hôm qua 15:30<br>
-                        <span class="text-xs text-gray-500">19/03/2026</span>
-                    </td>
-                    <td class="p-4 text-center">
-                        <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-[#E70814]/10 text-[#E70814] border border-[#E70814]/20">Từ chối</span>
-                        <div class="text-[10px] text-gray-500 mt-1" title="Lý do: Sai tên tài khoản">Xem lý do</div>
-                    </td>
-                    <td class="p-4 text-right">
-                        <div class="flex items-center justify-end gap-2">
-                             <button class="w-8 h-8 rounded bg-[#13131A] border border-[#2a2d35] text-[#E70814] hover:bg-[#E70814] hover:text-white transition-colors flex items-center justify-center btn-delete" title="Xóa bản ghi" data-id="RT0123">
-                                <span class="material-symbols-outlined text-[18px]">delete_forever</span>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
     <!-- Pagination -->
-    <div class="p-4 border-t border-[#2a2d35] flex items-center justify-between">
-        <span class="text-sm text-gray-400">Hiển thị <span class="font-bold text-white">1</span> đến <span class="font-bold text-white">3</span> của <span class="font-bold text-white">45</span> yêu cầu</span>
-        <div class="flex gap-1">
-            <button class="w-8 h-8 rounded bg-[#13131A] border border-[#2a2d35] text-gray-400 hover:text-white hover:bg-[#2a2d35] flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                <span class="material-symbols-outlined text-[20px]">chevron_left</span>
-            </button>
-            <button class="w-8 h-8 rounded bg-[#E70814] text-white flex items-center justify-center font-medium shadow-[0_2px_10px_rgba(231,8,20,0.3)] transition-colors">1</button>
-            <button class="w-8 h-8 rounded bg-[#13131A] border border-[#2a2d35] text-gray-400 hover:text-white hover:bg-[#2a2d35] flex items-center justify-center font-medium transition-colors">2</button>
-            <button class="w-8 h-8 rounded bg-[#13131A] border border-[#2a2d35] text-gray-400 hover:text-white hover:bg-[#2a2d35] flex items-center justify-center transition-colors">
-                <span class="material-symbols-outlined text-[20px]">chevron_right</span>
-            </button>
-        </div>
+    <div class="p-4 border-t border-[#2a2d35]">
+        {{ $withdrawals->links('vendor.pagination.tailwind-admin') }}
     </div>
 </div>
 

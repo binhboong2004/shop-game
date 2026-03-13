@@ -438,9 +438,11 @@ class AccountController extends Controller
      */
     public function getGameAttributes($id)
     {
-        $attributes = \App\Models\Attribute::where('game_id', $id)
-            ->where('status', 'active')
-            ->get();
+        $attributes = \App\Models\Attribute::whereHas('games', function($query) use ($id) {
+            $query->where('games.id', $id);
+        })
+        ->where('status', 'active')
+        ->get();
             
         return response()->json($attributes);
     }

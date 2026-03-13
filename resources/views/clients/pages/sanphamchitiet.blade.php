@@ -25,10 +25,10 @@
         <div class="lg:col-span-7 flex flex-col gap-4">
             <!-- Hình ảnh lớn -->
             <div class="relative w-full aspect-video rounded-xl overflow-hidden border border-border-muted bg-surface/50 group/main-image">
-                <img src="{{ (is_array($account->images) && count($account->images) > 0) ? (Str::startsWith($account->images[0], 'http') ? $account->images[0] : asset($account->images[0])) : 'https://placehold.co/800x450?text=No+Image' }}"
+                    <img src="{{ (is_array($account->images) && count($account->images) > 0) ? (Str::startsWith($account->images[0], 'http') ? $account->images[0] : asset($account->images[0])) : 'https://placehold.co/800x450?text=No+Image' }}"
                     id="main-product-image"
                     alt="Ảnh tài khoản #{{ $account->id }}"
-                    class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
+                    class="w-full h-full object-cover transition-transform duration-500 hover:scale-105 cursor-zoom-in">
 
                 <!-- Nút hướng -->
                 <button id="prev-img-btn" class="absolute top-1/2 -translate-y-1/2 left-4 size-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-primary transition-colors opacity-0 group-hover/main-image:opacity-100 z-10 cursor-pointer">
@@ -234,6 +234,26 @@
     </div>
     @endif
 </div>
+
+<!-- Lightbox Modal -->
+<div id="image-lightbox" class="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-sm flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 exit-scale">
+    <button id="close-lightbox" class="absolute top-6 right-6 text-white/70 hover:text-primary transition-colors z-[10000] p-2 hover:bg-white/10 rounded-full">
+        <span class="material-symbols-outlined text-4xl">close</span>
+    </button>
+    <div class="relative max-w-[95vw] max-h-[90vh] flex items-center justify-center p-4">
+        <img id="lightbox-img" src="" alt="Phóng to" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl transition-transform duration-500">
+    </div>
+</div>
+
+<style>
+    #image-lightbox.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    .cursor-zoom-in {
+        cursor: zoom-in;
+    }
+</style>
 @endsection
 
 @push('scripts')
@@ -281,6 +301,38 @@
                 let newIndex = currentIndex + 1;
                 if (newIndex >= thumbs.length) newIndex = 0;
                 updateMainImage(newIndex);
+            });
+        }
+
+        // Lightbox Logic
+        const lightbox = document.getElementById('image-lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const closeLightbox = document.getElementById('close-lightbox');
+
+        if (mainImage && lightbox && lightboxImg) {
+            mainImage.addEventListener('click', function() {
+                lightboxImg.src = this.src;
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Ngăn cuộn trang
+            });
+
+            const closeAction = () => {
+                lightbox.classList.remove('active');
+                document.body.style.overflow = '';
+            };
+
+            closeLightbox.addEventListener('click', closeAction);
+            lightbox.addEventListener('click', function(e) {
+                if (e.target === lightbox || e.target.closest('.relative') === null && e.target !== lightboxImg) {
+                    closeAction();
+                }
+            });
+
+            // Đóng bằng phím ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+                    closeAction();
+                }
             });
         }
     });

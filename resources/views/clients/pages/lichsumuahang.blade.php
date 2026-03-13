@@ -152,7 +152,14 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 font-bold text-primary">{{ number_format($order->amount, 0, ',', '.') }}đ</td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-primary">{{ number_format($order->amount - $order->discount_amount, 0, ',', '.') }}đ</span>
+                                            @if($order->discount_amount > 0)
+                                                <span class="text-xs text-slate-500 line-through">{{ number_format($order->amount, 0, ',', '.') }}đ</span>
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td class="px-6 py-4">
                                         @if($order->account)
                                             <div class="flex flex-col gap-1 min-w-[200px]">

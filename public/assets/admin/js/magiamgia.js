@@ -1,154 +1,161 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const addCouponBtn = document.getElementById('addCouponBtn');
     const couponModal = document.getElementById('couponModal');
     const deleteModal = document.getElementById('deleteModal');
-    const cancelBtns = document.querySelectorAll('.btn-cancel');
-    const cancelDeleteBtns = document.querySelectorAll('.btn-cancel-delete');
-    const editBtns = document.querySelectorAll('.btn-edit-coupon');
-    const deleteBtns = document.querySelectorAll('.btn-delete-coupon');
     const couponForm = document.getElementById('couponForm');
     const modalTitle = document.getElementById('modalTitle');
-    
-    const searchInput = document.getElementById('searchInput');
-    const statusFilter = document.getElementById('statusFilter');
-    const filterBtn = document.getElementById('filterBtn');
-    const couponRows = document.querySelectorAll('.coupon-row');
+    const couponIdInput = document.getElementById('couponId');
+    const statusCheckbox = document.getElementById('couponStatusCheckbox');
+    const statusValue = document.getElementById('couponStatusValue');
 
-    let isEditing = false;
-    let currentRow = null;
-    let rowToDelete = null;
-
-    function filterCoupons() {
-        if (!filterBtn) return;
-        const searchTerm = searchInput.value.toLowerCase().trim();
-        const statusVal = statusFilter.value;
-
-        couponRows.forEach(row => {
-            const rowSearch = row.getAttribute('data-search').toLowerCase();
-            const rowStatus = row.getAttribute('data-status');
-            
-            const matchSearch = rowSearch.includes(searchTerm);
-            const matchStatus = statusVal === 'all' || rowStatus === statusVal;
-
-            if (matchSearch && matchStatus) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    }
-
-    if (filterBtn) {
-        filterBtn.addEventListener('click', filterCoupons);
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') filterCoupons();
-        });
-    }
+    // SweetAlert Toast Mixin
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        background: '#13131A',
+        color: '#fff'
+    });
 
     function openModal(modal) {
         modal.classList.remove('hidden');
-        void modal.offsetWidth;
-        modal.classList.add('show');
-        modal.querySelector('div').classList.remove('scale-95', 'opacity-0');
-        modal.querySelector('div').classList.add('scale-100', 'opacity-100');
+        setTimeout(() => {
+            const inner = modal.querySelector('div');
+            inner.classList.remove('scale-95', 'opacity-0');
+            inner.classList.add('scale-100', 'opacity-100');
+        }, 10);
     }
 
     function closeModal(modal) {
-        modal.querySelector('div').classList.remove('scale-100', 'opacity-100');
-        modal.querySelector('div').classList.add('scale-95', 'opacity-0');
+        const inner = modal.querySelector('div');
+        inner.classList.remove('scale-100', 'opacity-100');
+        inner.classList.add('scale-95', 'opacity-0');
         setTimeout(() => {
-            modal.classList.remove('show');
             modal.classList.add('hidden');
         }, 300);
     }
 
-    if (addCouponBtn) {
-        addCouponBtn.addEventListener('click', () => {
-            isEditing = false;
-            modalTitle.innerHTML = '<span class="material-symbols-outlined text-[#E70814]">local_activity</span> Thêm Mã Giảm Giá Mới';
-            couponForm.reset();
-            openModal(couponModal);
+    // Sync checkbox with hidden status input
+    if (statusCheckbox) {
+        statusCheckbox.addEventListener('change', function() {
+            statusValue.value = this.checked ? 'active' : 'inactive';
         });
     }
 
-    editBtns.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            isEditing = true;
-            currentRow = this.closest('tr');
-            modalTitle.innerHTML = '<span class="material-symbols-outlined text-[#E70814]">local_activity</span> Cập Nhật Mã Giảm Giá';
-            
-            const codeCell = currentRow.querySelector('td:nth-child(2)');
-            document.getElementById('couponCode').value = codeCell ? codeCell.textContent.trim() : '';
-            
-            openModal(couponModal);
+    // Add button
+    document.getElementById('addCouponBtn')?.addEventListener('click', () => {
+        modalTitle.innerHTML = '<span class="material-symbols-outlined text-[#E70814]">local_activity</span> Thêm Mã Giảm Giá Mới';
+        couponForm.reset();
+        couponIdInput.value = '';
+        statusCheckbox.checked = true;
+        statusValue.value = 'active';
+        openModal(couponModal);
+    });
+
+    // Edit button
+    document.querySelectorAll('.btn-edit-coupon').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const id = this.dataset.id;
+            try {
+                const response = await fetch(`/admin/ma-giam-gia/${id}`);
+                const res = await response.json();
+                if (res.success) {
+                    const data = res.data;
+                    modalTitle.innerHTML = '<span class="material-symbols-outlined text-[#E70814]">local_activity</span> Cập Nhật Mã Giảm Giá';
+                    couponIdInput.value = data.id;
+                    document.getElementById('couponCode').value = data.code;
+                    document.getElementById('couponType').value = data.type;
+                    document.getElementById('couponValue').value = data.value;
+                    document.getElementById('couponMaxUses').value = data.max_uses;
+                    document.getElementById('couponMinOrder').value = data.min_order_amount || 0;
+                    document.getElementById('couponMaxDiscount').value = data.max_discount_amount || 0;
+                    
+                    if (data.start_date) {
+                        document.getElementById('couponStartDate').value = data.start_date.substring(0, 16);
+                    }
+                    if (data.end_date) {
+                        document.getElementById('couponEndDate').value = data.end_date.substring(0, 16);
+                    }
+                    
+                    statusCheckbox.checked = (data.status == 1);
+                    statusValue.value = data.status == 1 ? 'active' : 'inactive';
+                    
+                    openModal(couponModal);
+                }
+            } catch (e) {
+                Toast.fire({ icon: 'error', title: 'Lỗi khi lấy dữ liệu!' });
+            }
         });
     });
 
-    cancelBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            closeModal(couponModal);
-        });
+    // Submit form
+    couponForm?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const id = couponIdInput.value;
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `/admin/ma-giam-gia/${id}` : '/admin/ma-giam-gia';
+        
+        const formData = new FormData(this);
+        const jsonData = {};
+        formData.forEach((value, key) => jsonData[key] = value);
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            });
+            const res = await response.json();
+            if (res.success) {
+                Toast.fire({ icon: 'success', title: res.message });
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                Toast.fire({ icon: 'error', title: res.message || 'Có lỗi xảy ra!' });
+            }
+        } catch (e) {
+            Toast.fire({ icon: 'error', title: 'Lỗi hệ thống!' });
+        }
     });
 
-    deleteBtns.forEach(btn => {
+    // Delete
+    let deleteId = null;
+    document.querySelectorAll('.btn-delete-coupon').forEach(btn => {
         btn.addEventListener('click', function() {
-            rowToDelete = this.closest('tr');
+            deleteId = this.dataset.id;
             openModal(deleteModal);
         });
     });
 
-    cancelDeleteBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            closeModal(deleteModal);
-            rowToDelete = null;
-        });
+    document.getElementById('confirmDeleteBtn')?.addEventListener('click', async function() {
+        if (!deleteId) return;
+        try {
+            const response = await fetch(`/admin/ma-giam-gia/${deleteId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            });
+            const res = await response.json();
+            if (res.success) {
+                Toast.fire({ icon: 'success', title: res.message });
+                setTimeout(() => window.location.reload(), 1000);
+            }
+        } catch (e) {
+            Toast.fire({ icon: 'error', title: 'Lỗi hệ thống!' });
+        }
     });
 
-    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-    if (confirmDeleteBtn) {
-        confirmDeleteBtn.addEventListener('click', () => {
-            if (rowToDelete) {
-                rowToDelete.remove();
-                closeModal(deleteModal);
-                const Toast = Swal.mixin({
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true,
-                    background: '#13131A',
-                    color: '#fff',
-                    iconColor: '#10b981'
-                });
-                Toast.fire({
-                    icon: 'success',
-                    title: 'Đã xóa mã giảm giá thành công'
-                });
-            }
-        });
-    }
-
-    if (couponForm) {
-        couponForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
+    // Cancel buttons
+    document.querySelectorAll('.btn-cancel, .btn-cancel-delete').forEach(btn => {
+        btn.addEventListener('click', () => {
             closeModal(couponModal);
-            
-            const Toast = Swal.mixin({
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-                background: '#13131A',
-                color: '#fff',
-                iconColor: '#10b981'
-            });
-            
-            Toast.fire({
-                icon: 'success',
-                title: isEditing ? 'Cập nhật mã giảm giá thành công' : 'Thêm mã giảm giá thành công'
-            });
+            closeModal(deleteModal);
         });
-    }
+    });
 });

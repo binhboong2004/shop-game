@@ -92,21 +92,32 @@
             
             <a href="{{ route('admin.quanlynaptien') }}" class="flex items-center justify-between px-4 py-3 {{ request()->routeIs('admin.quanlynaptien') ? 'text-white bg-[#E70814] shadow-[0_4px_12px_rgba(231,8,20,0.25)]' : 'text-gray-400 hover:text-white hover:bg-[#20222a]' }} rounded-md transition-all font-medium group mb-1">
                 <div class="flex items-center gap-3.5">
-                    <span class="material-symbols-outlined text-[22px] {{ request()->routeIs('admin.quanlynaptien') ? 'text-white' : 'text-gray-400 group-hover:text-white transition-colors' }}">account_balance_wallet</span>
+                    <div class="relative">
+                        <span class="material-symbols-outlined text-[22px] {{ request()->routeIs('admin.quanlynaptien') ? 'text-white' : 'text-gray-400 group-hover:text-white transition-colors' }}">account_balance_wallet</span>
+                        @if(isset($pendingDepositsCount) && $pendingDepositsCount > 0)
+                        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-[#1a1c23]"></span>
+                        @endif
+                    </div>
                     Quản lý Nạp Tiền
                 </div>
+                @if(isset($pendingDepositsCount) && $pendingDepositsCount > 0)
+                <span class="bg-red-500/10 text-red-500 text-[10px] px-1.5 py-0.5 rounded font-bold border border-red-500/20">{{ $pendingDepositsCount }} Mới</span>
+                @endif
             </a>
             
             <a href="{{ route('admin.kiemduyetruttien') }}" class="flex items-center justify-between px-4 py-3 {{ request()->routeIs('admin.kiemduyetruttien') ? 'bg-[#E70814] text-white shadow-[0_4px_12px_rgba(231,8,20,0.25)]' : 'text-gray-400 hover:text-white hover:bg-[#20222a]' }} rounded-md transition-all font-medium group mb-1">
                 <div class="flex items-center gap-3.5">
                     <div class="relative">
                         <span class="material-symbols-outlined text-[22px] {{ request()->routeIs('admin.kiemduyetruttien') ? 'text-white' : 'text-gray-400 group-hover:text-white transition-colors' }}">payments</span>
+                        @if(isset($pendingWithdrawalsCount) && $pendingWithdrawalsCount > 0)
                         <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-[#1a1c23]"></span>
+                        @endif
                     </div>
                     Kiểm duyệt Rút Tiền
                 </div>
-                <!-- Warning badge -->
-                <span class="bg-red-500/10 text-red-500 text-[10px] px-1.5 py-0.5 rounded font-bold border border-red-500/20">3 Mới</span>
+                @if(isset($pendingWithdrawalsCount) && $pendingWithdrawalsCount > 0)
+                <span class="bg-red-500/10 text-red-500 text-[10px] px-1.5 py-0.5 rounded font-bold border border-red-500/20">{{ $pendingWithdrawalsCount }} Mới</span>
+                @endif
             </a>
 
             <a href="{{ route('admin.lichsubanhang') }}" class="flex items-center gap-3.5 px-4 py-3 {{ request()->routeIs('admin.lichsubanhang') ? 'bg-[#E70814] text-white shadow-[0_4px_12px_rgba(231,8,20,0.25)]' : 'text-gray-400 hover:text-white hover:bg-[#20222a]' }} rounded-md transition-all font-medium group">

@@ -1,166 +1,184 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('searchInput');
-    const statusFilter = document.getElementById('statusFilter');
-    const dateFilter = document.getElementById('dateFilter');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+    // Helper to show toast
+    const showNotice = (message, type = 'success') => {
+        if (window.showToast) {
+            window.showToast(message, type);
+        } else {
+            alert(message);
+        }
+    };
+
+    // --- Filters ---
     const filterBtn = document.getElementById('filterBtn');
-    const rows = document.querySelectorAll('.withdraw-row');
-
-    function applyFilters() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const statusValue = statusFilter.value;
-        const dateValue = dateFilter.value;
-
-        rows.forEach(row => {
-            const searchData = row.getAttribute('data-search').toLowerCase();
-            const statusData = row.getAttribute('data-status');
-            const dateData = row.getAttribute('data-date');
-
-            let matchSearch = searchData.includes(searchTerm);
-            let matchStatus = statusValue === 'all' || statusData === statusValue;
-            let matchDate = dateValue === 'all' || dateData === dateValue || (dateValue === 'week' && (dateData === 'today' || dateData === 'week')); // Simplified date logic
-
-            if (matchSearch && matchStatus && matchDate) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    }
-
     if (filterBtn) {
-        filterBtn.addEventListener('click', applyFilters);
-    }
+        filterBtn.addEventListener('click', function() {
+            const search = document.getElementById('searchInput').value;
+            const status = document.getElementById('statusFilter').value;
+            const date = document.getElementById('dateFilter').value;
 
-    if (searchInput) {
-        searchInput.addEventListener('keyup', function(e) {
-            if (e.key === 'Enter') applyFilters();
+            const url = new URL(window.location.href);
+            if (search) url.searchParams.set('search', search); else url.searchParams.delete('search');
+            if (status !== 'all') url.searchParams.set('status', status); else url.searchParams.delete('status');
+            if (date !== 'all') url.searchParams.set('date', date); else url.searchParams.delete('date');
+
+            window.location.href = url.toString();
         });
     }
-    if (statusFilter) {
-        statusFilter.addEventListener('change', applyFilters);
-    }
-    if (dateFilter) {
-        dateFilter.addEventListener('change', applyFilters);
+
+    // --- Modal Logic ---
+    function openModal(modal) {
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            const content = modal.querySelector('.bg-\\[\\#20222a\\]');
+            if (content) {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }
+        }, 10);
     }
 
-    if (statusFilter && rows.length > 0) {
-        applyFilters();
+    function closeModal(modal) {
+        if (!modal) return;
+        const content = modal.querySelector('.bg-\\[\\#20222a\\]');
+        if (content) {
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+        }
+        setTimeout(() => modal.classList.add('hidden'), 300);
     }
 
+    // --- Actions ---
+    let currentId = null;
+
+    // Approve
     const approveModal = document.getElementById('approveModal');
-    const btnApproveList = document.querySelectorAll('.btn-approve');
-    let currentApproveId = null;
-
-    btnApproveList.forEach(btn => {
+    document.querySelectorAll('.btn-approve').forEach(btn => {
         btn.addEventListener('click', function() {
-            currentApproveId = this.getAttribute('data-id');
-            const agentName = this.getAttribute('data-agent');
-            const amount = this.getAttribute('data-amount');
-            
-            document.getElementById('approveAgent').textContent = agentName;
-            document.getElementById('approveAmount').textContent = amount;
-            
+            currentId = this.dataset.id;
+            document.getElementById('approveAgent').textContent = this.dataset.agent;
+            document.getElementById('approveAmount').textContent = this.dataset.amount;
             openModal(approveModal);
         });
     });
 
-    document.getElementById('btnConfirmApprove').addEventListener('click', function() {
-        if (currentApproveId) {
-            if (window.showToast) {
-                window.showToast('Đã duyệt yêu cầu rút tiền thành công!', 'success');
+    document.getElementById('btnConfirmApprove').addEventListener('click', async function() {
+        if (!currentId) return;
+        const btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Đang xử lý...';
+
+        try {
+            const response = await fetch(`/admin/kiem-duyet-rut-tien/${currentId}/approve`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+            if (data.success) {
+                showNotice(data.message, 'success');
+                setTimeout(() => window.location.reload(), 1000);
             } else {
-                alert('Đã duyệt yêu cầu rút tiền thành công!');
+                showNotice(data.message, 'error');
+                btn.disabled = false;
+                btn.textContent = 'Xác nhận Đã Chuyển';
             }
-            closeModal(approveModal);
+        } catch (e) {
+            showNotice('Lỗi hệ thống!', 'error');
+            btn.disabled = false;
+            btn.textContent = 'Xác nhận Đã Chuyển';
         }
     });
 
+    // Reject
     const rejectModal = document.getElementById('rejectModal');
-    const rejectForm = document.getElementById('rejectForm');
-    const btnRejectList = document.querySelectorAll('.btn-reject');
-    let currentRejectId = null;
-
-    btnRejectList.forEach(btn => {
+    document.querySelectorAll('.btn-reject').forEach(btn => {
         btn.addEventListener('click', function() {
-            currentRejectId = this.getAttribute('data-id');
-            const agentName = this.getAttribute('data-agent');
-            const amount = this.getAttribute('data-amount');
-            
-            document.getElementById('rejectAgent').textContent = agentName;
-            document.getElementById('rejectAmount').textContent = amount;
+            currentId = this.dataset.id;
+            document.getElementById('rejectAgent').textContent = this.dataset.agent;
+            document.getElementById('rejectAmount').textContent = this.dataset.amount;
             document.getElementById('rejectReason').value = '';
-            
             openModal(rejectModal);
         });
     });
 
-    if (rejectForm) {
-        rejectForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const reason = document.getElementById('rejectReason').value;
-            
-            if (currentRejectId && reason) {
-                if (window.showToast) {
-                    window.showToast('Đã từ chối yêu cầu.', 'success');
-                } else {
-                    alert('Đã từ chối yêu cầu. Lý do: ' + reason);
-                }
-                closeModal(rejectModal);
+    document.getElementById('rejectForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        if (!currentId) return;
+
+        const reason = document.getElementById('rejectReason').value.trim();
+        const btn = document.getElementById('btnConfirmReject');
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(`/admin/kiem-duyet-rut-tien/${currentId}/reject`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reason })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showNotice(data.message, 'success');
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                showNotice(data.message, 'error');
+                btn.disabled = false;
             }
-        });
-    }
+        } catch (e) {
+            showNotice('Lỗi hệ thống!', 'error');
+            btn.disabled = false;
+        }
+    });
 
+    // Delete
     const deleteModal = document.getElementById('deleteModal');
-    const btnDeleteList = document.querySelectorAll('.btn-delete');
-    let currentDeleteId = null;
-
-    btnDeleteList.forEach(btn => {
+    document.querySelectorAll('.btn-delete').forEach(btn => {
         btn.addEventListener('click', function() {
-            currentDeleteId = this.getAttribute('data-id');
+            currentId = this.dataset.id;
             openModal(deleteModal);
         });
     });
 
-    document.getElementById('btnConfirmDelete').addEventListener('click', function() {
-        if (currentDeleteId) {
-            if (window.showToast) {
-                window.showToast('Đã xóa dữ liệu thành công!', 'success');
+    document.getElementById('btnConfirmDelete').addEventListener('click', async function() {
+        if (!currentId) return;
+        const btn = this;
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(`/admin/kiem-duyet-rut-tien/${currentId}`, {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': csrfToken }
+            });
+            const data = await response.json();
+            if (data.success) {
+                showNotice(data.message, 'success');
+                setTimeout(() => window.location.reload(), 1000);
             } else {
-                alert('Đã xóa dữ liệu thành công!');
+                showNotice(data.message, 'error');
+                btn.disabled = false;
             }
-            closeModal(deleteModal);
+        } catch (e) {
+            showNotice('Lỗi hệ thống!', 'error');
+            btn.disabled = false;
         }
     });
 
-    function openModal(modal) {
-        if (modal) {
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.add('active');
-            }, 10);
-        }
-    }
-
-    function closeModal(modal) {
-        if (modal) {
-            modal.classList.remove('active');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-        }
-    }
-
-    const btnCancelList = document.querySelectorAll('.btn-cancel');
-    btnCancelList.forEach(btn => {
+    // View Note/Reason
+    document.querySelectorAll('.btn-view-note').forEach(btn => {
         btn.addEventListener('click', function() {
-            const modal = this.closest('.fixed');
-            closeModal(modal);
+            alert("Lý do từ chối: " + this.dataset.note);
         });
     });
 
-    window.addEventListener('click', function(e) {
-        if (e.target.classList.contains('fixed') && e.target.classList.contains('inset-0')) {
-            closeModal(e.target);
-        }
+    // Cancel UI
+    document.querySelectorAll('.btn-cancel').forEach(btn => {
+        btn.addEventListener('click', () => closeModal(btn.closest('.fixed')));
+    });
+
+    document.querySelectorAll('.fixed.inset-0').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal(modal);
+        });
     });
 });
