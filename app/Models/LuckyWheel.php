@@ -21,4 +21,9 @@ class LuckyWheel extends Model
     {
         return $this->belongsTo(Game::class);
     }
+
+    public function prizes()
+    {
+        return $this->hasMany(WheelPrize::class, 'lucky_wheel_id');
+    }
 }

@@ -88,8 +88,16 @@ class HomeController extends Controller
 
     public function vongquaychitiet($id)
     {
-        $wheel = \App\Models\LuckyWheel::with('game')->findOrFail($id);
-        return view('clients.pages.vongquaychitiet', compact('wheel'));
+        $wheel = \App\Models\LuckyWheel::with(['game', 'prizes'])->findOrFail($id);
+        
+        // Lấy lịch sử trúng thưởng mới nhất của vòng quay này
+        $recentHistories = \App\Models\WheelHistory::with(['user', 'prize'])
+            ->whereIn('prize_id', $wheel->prizes->pluck('id'))
+            ->latest()
+            ->take(10)
+            ->get();
+
+        return view('clients.pages.vongquaychitiet', compact('wheel', 'recentHistories'));
     }
 
     public function tintuc(Request $request)
@@ -255,6 +263,16 @@ class HomeController extends Controller
         return view('clients.pages.lichsumuahang', compact('orders'));
     }
 
+    public function lichsuquay()
+    {
+        $histories = \App\Models\WheelHistory::with(['prize.luckyWheel'])
+            ->where('user_id', \Illuminate\Support\Facades\Auth::id())
+            ->latest()
+            ->paginate(10);
+
+        return view('clients.pages.lichsuquay', compact('histories'));
+    }
+
     public function lichsunaptien()
     {
         if (!\Illuminate\Support\Facades\Auth::check()) {
@@ -393,4 +411,5 @@ class HomeController extends Controller
             'wishlistedIds'
         ));
     }
+
 }

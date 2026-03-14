@@ -57,8 +57,8 @@
 
                         <!-- Mega Menu Panel -->
                         <div
-                            class="absolute top-full left-0 w-[800px] bg-background-dark border border-primary/10 rounded-b-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 translate-y-2 transition-all duration-300 z-[100] p-6">
-                            <div class="grid grid-cols-4 gap-8">
+                            class="absolute top-full left-0 min-w-[300px] w-max max-w-[800px] bg-background-dark border border-primary/10 rounded-b-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 translate-y-2 transition-all duration-300 z-[100] p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 @foreach($games as $game)
                                 @if($game->luckyWheels->count() > 0)
                                 <div class="flex flex-col gap-4">
@@ -73,7 +73,7 @@
                                             class="text-sm text-slate-400 hover:text-white flex flex-col gap-1 transition-colors">
                                             <span class="text-slate-300 flex items-center gap-1 group/wheel">
                                                 <span class="material-symbols-outlined text-[16px] text-primary transition-transform group-hover/wheel:rotate-180">casino</span>
-                                                <span class="line-clamp-1">{{ $wheel->name }}</span>
+                                                <span>{{ $wheel->name }}</span>
                                             </span>
                                             <span class="text-primary font-bold text-xs pl-5">{{ number_format($wheel->price) }}đ / lượt</span>
                                         </a>
@@ -164,7 +164,7 @@
                         <!-- Text Info -->
                         <div class="hidden sm:flex flex-col items-end justify-center">
                             <span class="font-bold text-white text-base leading-none mb-1">{{ Auth::user()->name }}</span>
-                            <span class="text-slate-400 text-sm font-medium leading-none">{{ number_format(Auth::user()->balance) }}đ</span>
+                            <span class="text-slate-400 text-sm font-medium leading-none user-balance-text">{{ number_format(Auth::user()->balance) }}đ</span>
                         </div>
                         <!-- Avatar -->
                         <div
@@ -202,9 +202,9 @@
                                     Lịch sử mua hàng
                                 </a>
 
-                                <a href="#"
+                                <a href="{{ route('lichsuquay') }}"
                                     class="px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-primary/10 flex items-center gap-3 transition-colors border-t border-primary/10">
-                                    <span class="material-symbols-outlined text-[20px] text-primary">history</span>
+                                    <span class="material-symbols-outlined text-[20px] text-primary">casino</span>
                                     Lịch sử quay
                                 </a>
 

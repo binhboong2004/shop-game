@@ -78,9 +78,9 @@
                         </div>
                     </a>
 
-                    <a href="#"
+                    <a href="{{ route('lichsuquay') }}"
                         class="px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-primary/10 flex items-center gap-3 transition-colors border-t border-primary/10">
-                        <span class="material-symbols-outlined text-[20px] text-primary">history</span>
+                        <span class="material-symbols-outlined text-[20px] text-primary">casino</span>
                         Lịch sử quay
                     </a>
 

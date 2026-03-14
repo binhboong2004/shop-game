@@ -77,7 +77,7 @@
                     <p class="text-xl font-bold text-green-500">{{ number_format($wheel->price) }} đ</p>
                 </div>
                 <div class="h-10 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
-                <a href="{{ route('napthecao') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm whitespace-nowrap">
+                <a href="{{ route('napnganhang') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm whitespace-nowrap">
                     Nạp thẻ ngay
                 </a>
             </div>
@@ -126,6 +126,28 @@
     </div>
 </div>
 
+<!-- Modal Xác nhận Quay -->
+<div id="confirmSpinModal" class="fixed inset-0 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="confirmBackdrop"></div>
+    <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm p-6 sm:p-8 transform scale-95 transition-transform duration-300 ease-out text-center border border-slate-200 dark:border-slate-700">
+        <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="material-symbols-outlined text-3xl">help</span>
+        </div>
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Xác nhận quay?</h2>
+        <p class="text-slate-600 dark:text-slate-300 mb-6">
+            Mỗi lượt quay sẽ trừ <strong class="text-[#E70814]">{{ number_format($wheel->price) }}đ</strong> vào tài khoản của bạn.
+        </p>
+        <div class="flex gap-3">
+            <button id="cancelSpinBtn" class="flex-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-white py-2.5 rounded-lg font-medium transition-colors">
+                Hủy bỏ
+            </button>
+            <button id="confirmBtn" class="flex-1 bg-[#E70814] hover:bg-red-700 text-white py-2.5 rounded-lg font-medium transition-colors">
+                Xác nhận
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Trúng Thưởng -->
 <div id="prizeModal" class="fixed inset-0 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
     <!-- Backdrop -->
@@ -151,14 +173,14 @@
         <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2 relative z-10">Chúc Mừng Bạn!</h2>
         <p class="text-slate-600 dark:text-slate-300 mb-6 relative z-10">
             Bạn đã quay trúng: <br/>
-            <span class="text-lg font-bold text-[#E70814] mt-2 block" id="prizeName">...</span>
+            <span class="text-lg font-bold text-[#E70814] mt-2 block" id="prizeResultName">...</span>
         </p>
         
         <div class="flex gap-3 relative z-10">
             <button id="playAgainBtn" class="flex-1 bg-[#E70814] hover:bg-red-700 text-white py-2.5 rounded-lg font-medium transition-colors">
                 Quay tiếp
             </button>
-            <a href="{{ route('lichsumuahang') }}" class="flex-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-white py-2.5 rounded-lg font-medium transition-colors">
+            <a href="{{ route('lichsuquay') }}" class="flex-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-white py-2.5 rounded-lg font-medium transition-colors">
                 Lịch sử
             </a>
         </div>
@@ -167,6 +189,11 @@
 @endsection
 
 @push('scripts')
+    <script>
+        window.wheelPrizes = @json($wheel->prizes);
+        window.recentHistories = @json($recentHistories);
+        window.spinUrl = "{{ route('vongquay.spin', $wheel->id) }}";
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="{{ asset('assets/clients/js/vongquay.js') }}"></script>
 @endpush

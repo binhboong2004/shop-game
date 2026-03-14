@@ -41,6 +41,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/lichsunaptien', [HomeController::class, 'lichsunaptien'])->name('lichsunaptien');
     Route::get('/lichsumuahang', [HomeController::class, 'lichsumuahang'])->name('lichsumuahang');
+    
+    // Vòng quay spin
+    Route::post('/vongquay/spin/{id}', [App\Http\Controllers\Clients\WheelController::class, 'spin'])->name('vongquay.spin');
+    Route::get('/lichsuquay', [HomeController::class, 'lichsuquay'])->name('lichsuquay');
 });
 
 Route::get('/vongquay', function () {
@@ -213,9 +217,19 @@ Route::prefix('admin')->middleware(['admin'])->group(function() {
         return view('admin.pages.hotrophongve');
     })->name('admin.hotrophongve');
 
-    Route::get('/vong-quay-may-man', function () {
-        return view('admin.pages.vongquaymayman');
-    })->name('admin.vongquaymayman');
+    Route::get('/vong-quay-may-man', [App\Http\Controllers\Admin\LuckyWheelController::class, 'index'])->name('admin.vongquaymayman');
+    Route::post('/vong-quay-may-man', [App\Http\Controllers\Admin\LuckyWheelController::class, 'store'])->name('admin.vongquaymayman.store');
+    Route::get('/vong-quay-may-man/{id}', [App\Http\Controllers\Admin\LuckyWheelController::class, 'show'])->name('admin.vongquaymayman.show');
+    Route::get('/vong-quay-may-man/{id}/edit', [App\Http\Controllers\Admin\LuckyWheelController::class, 'edit'])->name('admin.vongquaymayman.edit');
+    Route::post('/vong-quay-may-man/{id}/update', [App\Http\Controllers\Admin\LuckyWheelController::class, 'update'])->name('admin.vongquaymayman.update');
+    Route::delete('/vong-quay-may-man/{id}', [App\Http\Controllers\Admin\LuckyWheelController::class, 'destroy'])->name('admin.vongquaymayman.destroy');
+    Route::patch('/vong-quay-may-man/{id}/toggle-status', [App\Http\Controllers\Admin\LuckyWheelController::class, 'toggleStatus'])->name('admin.vongquaymayman.toggleStatus');
+
+    // Quản lý phần thưởng
+    Route::post('/prize-store', [App\Http\Controllers\Admin\WheelPrizeController::class, 'store'])->name('admin.wheelprizes.store');
+    Route::get('/prize/{id}/edit', [App\Http\Controllers\Admin\WheelPrizeController::class, 'edit'])->name('admin.wheelprizes.edit');
+    Route::post('/prize/{id}/update', [App\Http\Controllers\Admin\WheelPrizeController::class, 'update'])->name('admin.wheelprizes.update');
+    Route::delete('/prize/{id}', [App\Http\Controllers\Admin\WheelPrizeController::class, 'destroy'])->name('admin.wheelprizes.destroy');
 
     Route::get('/tin-tuc-su-kien', [App\Http\Controllers\Admin\ArticleController::class, 'index'])->name('admin.tintucsukien');
     Route::post('/tin-tuc-su-kien', [App\Http\Controllers\Admin\ArticleController::class, 'store'])->name('admin.tintucsukien.store');
